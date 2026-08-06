@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rodax - Mobilidade</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --rodax-deep: #000c1d;
+            --rodax-blue: #0074D9;
+            --rodax-light: #7FDBFF;
+            --text-main: #FFFFFF;
+            --text-muted: #ccd6f6;
+            --card-bg: #0a192f;
+            --danger-red: #ff4136;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--rodax-deep);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Header */
+        .top-nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .menu-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 116, 217, 0.3);
+            color: var(--text-main);
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
+        /* Map Placeholder */
+        #map-container {
+            height: 100%;
+            width: 100%;
+            background: #001220;
+        }
+
+        .map-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--rodax-blue);
+        }
+
+        .map-placeholder i {
+            font-size: 50px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        /* Bottom Sheet */
+        .bottom-sheet {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 30px 30px 0 0;
+            padding: 20px;
+            z-index: 20;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            border-top: 1px solid rgba(0, 116, 217, 0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .drag-handle {
+            width: 40px;
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin: 0 auto 15px;
+        }
+
+        .header-search {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-search h2 {
+            color: var(--text-main);
+            font-size: 22px;
+        }
+
+        .add-stop-btn {
+            background: rgba(0, 116, 217, 0.15);
+            border: 1px solid var(--rodax-blue);
+            color: var(--rodax-light);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .route-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            background: var(--rodax-deep);
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .origin-icon { color: var(--rodax-light); font-size: 12px; }
+        .destination-icon { color: var(--rodax-blue); font-size: 12px; }
+
+        .input-row input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+        }
+
+        .remove-stop-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger-red);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            background: var(--rodax-blue);
+            color: var(--text-main);
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        /* Lista de Categorias */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: var(--rodax-deep);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option-card.selected {
+            border-color: var(--rodax-blue);
+            background: rgba(0, 116, 217, 0.1);
+        }
+
+        .option-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-icon {
+            font-size: 26px;
+            color: var(--rodax-light);
+        }
+
+        .option-icon.electric { color: #2ecc40; }
+        .option-icon.black { color: #ffffff; }
+
+        .option-info strong {
+            color: var(--text-main);
+            font-size: 17px;
+            display: block;
+        }
+
+        .option-info p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .option-price .price {
+            color: var(--text-main);
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .action-footer {
+            display: flex;
+            gap: 10px;
+        }
+
+        .back-btn {
+            background: var(--rodax-deep);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main);
+            width: 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .flex-grow { flex-grow: 1; }
+
+        .location-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .location-item i {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 116, 217, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rodax-light);
+        }
+
+        .location-item strong { color: var(--text-main); font-size: 16px; }
+        .location-item p { color: var(--text-muted); font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="top-nav">
+            <button class="menu-btn"><i class="fa-solid fa-bars"></i></button>
+        </header>
+
+        <div id="map-container">
+            <div class="map-placeholder">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                <p>O mapa será renderizado aqui</p>
+            </div>
+        </div>
+
+        <div class="bottom-sheet" id="bottomSheet">
+            <div class="drag-handle"></div>
+            
+            <div class="search-container" id="searchSection">
+                <div class="header-search">
+                    <h2>Para onde vamos?</h2>
+                    <button id="addStopBtn" class="add-stop-btn">
+                        <i class="fa-solid fa-plus"></i> Adicionar parada
+                    </button>
+                </div>
+
+                <div class="route-inputs" id="routeInputs">
+                    <div class="input-row">
+                        <i class="fa-solid fa-circle origin-icon"></i>
+                        <input type="text" value="Sua localização atual" readonly>
+                    </div>
+                    <div class="input-row destination">
+                        <i class="fa-solid fa-square destination-icon"></i>
+                        <input type="text" placeholder="Digite seu destino..." class="stop-input" id="mainDestination">
+                    </div>
+                </div>
+
+                <button class="confirm-btn" id="confirmRouteBtn">Calcular Tarifa</button>
+            </div>
+
+            <div class="ride-options-container hidden" id="rideOptionsSection">
+                <div class="options-list">
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-info">
+                            <i class="fa-solid fa-box option-icon"></i>
+                            <div>
+                                <strong>Rodax Envio</strong>
+                                <p>Envio rápido de pacotes • 3 min</p>
+                            </div>
+                        </div>
+                        <div class="option-price">
+                            <span class="price" id="priceEnvio">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="option-card selected" onclick="selectOption(this)">
+                        <div class="option-info">
+                            <i class="fa-solid fa-car option-icon"></i>
+                            <div>
+                                <strong>Rodax X</strong>
+                                <p>Viagens econômicas • 4 min</p>
+                            </div>
+                        </div>
+                        <div class="option-price">
+                            <span class="price" id="priceX">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-info">
+                            <i class="fa-solid fa-gauge-high option-icon"></i>
+                            <div>
+                                <strong>Rodax Prioridade</strong>
+                                <p>Embarque mais rápido • 1 min</p>
+                            </div>
+                        </div>
+                        <div class="option-price">
+                            <span class="price" id="pricePrioridade">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-info">
+                            <i class="fa-solid fa-bolt option-icon electric"></i>
+                            <div>
+                                <strong>Rodax Green / Elétrico</strong>
+                                <p>Veículos 100% elétricos • 5 min</p>
+                            </div>
+                        </div>
+                        <div class="option-price">
+                            <span class="price" id="priceEletrico">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-info">
+                            <i class="fa-solid fa-car-side option-icon black"></i>
+                            <div>
+                                <strong>Rodax Black</strong>
+                                <p>Carros de alto padrão • 6 min</p>
+                            </div>
+                        </div>
+                        <div class="option-price">
+                            <span class="price" id="priceBlack">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button class="back-btn" id="backToSearchBtn"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="confirm-btn flex-grow" id="requestRideBtn">Solicitar Rodax X</button>
+                </div>
+            </div>
+
+            <div class="quick-locations" id="quickLocations">
+                <div class="location-item">
+                    <i class="fa-solid fa-house"></i>
+                    <div>
+                        <strong>Casa</strong>
+                        <p>Rua Exemplo, 123</p>
+                    </div>
+                </div>
+                <div class="location-item">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <div>
+                        <strong>Trabalho</strong>
+                        <p>Av. Corporativa, 456</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stopCount = 0;
+        const maxStops = 3;
+
+        const addStopBtn = document.getElementById('addStopBtn');
+        const routeInputs = document.getElementById('routeInputs');
+        const confirmRouteBtn = document.getElementById('confirmRouteBtn');
+        const backToSearchBtn = document.getElementById('backToSearchBtn');
+
+        const searchSection = document.getElementById('searchSection');
+        const rideOptionsSection = document.getElementById('rideOptionsSection');
+        const quickLocations = document.getElementById('quickLocations');
+
+        // Adicionar paradas
+        addStopBtn.addEventListener('click', () => {
+            if (stopCount < maxStops) {
+                stopCount++;
+                const newStopRow = document.createElement('div');
+                newStopRow.classList.add('input-row');
+                newStopRow.id = `stop-${stopCount}`;
+
+                newStopRow.innerHTML = `
+                    <i class="fa-solid fa-location-dot" style="color: #7FDBFF;"></i>
+                    <input type="text" placeholder="Parada ${stopCount}..." class="stop-input">
+                    <button class="remove-stop-btn" onclick="removeStop('stop-${stopCount}')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+
+                const destinationInput = routeInputs.querySelector('.destination');
+                routeInputs.insertBefore(newStopRow, destinationInput);
+
+                if (stopCount === maxStops) {
+                    addStopBtn.style.display = 'none';
+                }
+            }
+        });
+
+        function removeStop(id) {
+            const stopElement = document.getElementById(id);
+            if (stopElement) {
+                stopElement.remove();
+                stopCount--;
+                addStopBtn.style.display = 'flex';
+            }
+        }
+
+        // Cálculo silencioso de preço dinâmico
+        function calculateDynamicPrice(distanceKm) {
+            const baseFare = 5.00;
+            
+            const pricePerKmEnvio = 2.80;
+            const pricePerKmX = 3.20;
+            const pricePerKmPrioridade = 4.00;
+            const pricePerKmEletrico = 4.50;
+            const pricePerKmBlack = 6.50;
+
+            const currentHour = new Date().getHours();
+            let dynamicMultiplier = 1.0;
+
+            if ((currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 20)) {
+                dynamicMultiplier = 1.5;
+            } else {
+                dynamicMultiplier = 1.2;
+            }
+
+            const priceEnvio = (baseFare + (distanceKm * pricePerKmEnvio)) * dynamicMultiplier;
+            const priceX = (baseFare + (distanceKm * pricePerKmX)) * dynamicMultiplier;
+            const pricePrioridade = (baseFare + (distanceKm * pricePerKmPrioridade)) * dynamicMultiplier;
+            const priceEletrico = (baseFare + (distanceKm * pricePerKmEletrico)) * dynamicMultiplier;
+            const priceBlack = (baseFare + (distanceKm * pricePerKmBlack)) * dynamicMultiplier;
+
+            document.getElementById('priceEnvio').innerText = `R$ ${priceEnvio.toFixed(2).replace('.', ',')}`;
+            document.getElementById('priceX').innerText = `R$ ${priceX.toFixed(2).replace('.', ',')}`;
+            document.getElementById('pricePrioridade').innerText = `R$ ${pricePrioridade.toFixed(2).replace('.', ',')}`;
+            document.getElementById('priceEletrico').innerText = `R$ ${priceEletrico.toFixed(2).replace('.', ',')}`;
+            document.getElementById('priceBlack').innerText = `R$ ${priceBlack.toFixed(2).replace('.', ',')}`;
+        }
+
+        confirmRouteBtn.addEventListener('click', () => {
+            calculateDynamicPrice(11);
+            searchSection.classList.add('hidden');
+            quickLocations.classList.add('hidden');
+            rideOptionsSection.classList.remove('hidden');
+        });
+
+        backToSearchBtn.addEventListener('click', () => {
+            rideOptionsSection.classList.add('hidden');
+            searchSection.classList.remove('hidden');
+            quickLocations.classList.remove('hidden');
+        });
+
+        function selectOption(element) {
+            document.querySelectorAll('.option-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            const categoryName = element.querySelector('strong').innerText;
+            document.getElementById('requestRideBtn').innerText = `Solicitar ${categoryName}`;
+        }
+    </script>
+</body>
+</html>
