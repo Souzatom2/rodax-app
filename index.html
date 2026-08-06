@@ -164,6 +164,12 @@
       margin-top: 2px;
     }
 
+    .ride-details .sub-desc {
+      font-size: 12px;
+      color: #888;
+      margin-top: 1px;
+    }
+
     .badge {
       display: inline-block;
       background: #d32f2f;
@@ -242,6 +248,7 @@
           <div class="ride-details">
             <h4>Marcha X 👤4</h4>
             <p id="time-X">-- min est.</p>
+            <p class="sub-desc">Viagens baratas</p>
           </div>
         </div>
         <div class="ride-price" id="price-X">R$ --</div>
@@ -251,8 +258,9 @@
         <div class="ride-info-left">
           <div class="ride-icon">🏍️</div>
           <div class="ride-details">
-            <h4>Marcha Moto</h4>
+            <h4>Envios Moto</h4>
             <p id="time-Moto">-- min est.</p>
+            <p class="sub-desc">Envie itens pequenos sem gastar muito</p>
           </div>
         </div>
         <div class="ride-price" id="price-Moto">R$ --</div>
@@ -262,8 +270,9 @@
         <div class="ride-info-left">
           <div class="ride-icon">🚘</div>
           <div class="ride-details">
-            <h4>Comfort</h4>
+            <h4>Comfort 👤4</h4>
             <p id="time-Comfort">-- min est.</p>
+            <p class="sub-desc">Carros mais novos e espaçosos</p>
             <span class="badge">Mais rápido</span>
           </div>
         </div>
@@ -272,10 +281,11 @@
 
       <div class="ride-item" onclick="selectOption(this)">
         <div class="ride-info-left">
-          <div class="ride-icon">🚘</div>
+          <div class="ride-icon">🖤</div>
           <div class="ride-details">
-            <h4>Black</h4>
+            <h4>Black 👤4</h4>
             <p id="time-Black">-- min est.</p>
+            <p class="sub-desc">Carros de luxo e motoristas parceiros top</p>
           </div>
         </div>
         <div class="ride-price" id="price-Black">R$ --</div>
@@ -367,15 +377,17 @@
         distanceKm = summary.totalDistance / 1000;
         const baseTime = Math.round(summary.totalTime / 60);
 
+        // Previsão de chegada
         document.getElementById('time-X').innerText = `${baseTime} min`;
         document.getElementById('time-Moto').innerText = `${Math.max(1, baseTime - 3)} min`;
         document.getElementById('time-Comfort').innerText = `${Math.max(1, baseTime - 2)} min`;
         document.getElementById('time-Black').innerText = `${baseTime} min`;
 
-        const pX = 5.00 + (distanceKm * 2.30);
-        const pMoto = 3.00 + (distanceKm * 1.30);
-        const pComfort = 7.00 + (distanceKm * 2.90);
-        const pBlack = 10.00 + (distanceKm * 3.80);
+        // Fórmula ajustada para bater exatamente com os valores de mercado (Base + Distância + Tempo)
+        const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40);
+        const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20);
+        const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50);
+        const pBlack = 15.00 + (distanceKm * 4.80) + (baseTime * 0.60);
 
         document.getElementById('price-X').innerText = `R$ ${pX.toFixed(2)}`;
         document.getElementById('price-Moto').innerText = `R$ ${pMoto.toFixed(2)}`;
