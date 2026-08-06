@@ -34,6 +34,7 @@
       z-index: 1;
     }
     
+    /* Painel Inferior Ajustável com Rolagem */
     .bottom-panel {
       position: absolute;
       bottom: 0;
@@ -41,13 +42,13 @@
       transform: translateX(-50%);
       z-index: 1000;
       width: 100%;
-      max-width: 450px;
+      max-width: 460px;
       background: #ffffff;
       padding: 16px 20px 24px 20px;
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
       box-shadow: 0 -8px 30px rgba(0,0,0,0.25);
-      max-height: 75vh;
+      max-height: 80vh;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -58,7 +59,6 @@
       background: #ccc;
       border-radius: 3px;
       margin: 0 auto 12px auto;
-      cursor: grab;
     }
 
     .brand-header {
@@ -181,7 +181,7 @@
     }
 
     .ride-icon-box {
-      font-size: 26px;
+      font-size: 28px;
       width: 40px;
       text-align: center;
     }
@@ -324,9 +324,17 @@
       100% { transform: scale(1); }
     }
 
-    /* Oculta os balões nativos de instruções da rota para manter a tela limpa */
+    /* Oculta os balões nativos de rota do Leaflet para não poluir a tela */
     .leaflet-routing-container {
       display: none !important;
+    }
+
+    /* Ícones Personalizados Nativos */
+    .vehicle-emoji {
+      font-size: 28px;
+      line-height: 1;
+      text-align: center;
+      transition: transform 0.2s linear;
     }
   </style>
 </head>
@@ -344,10 +352,10 @@
       
       <div class="input-box">
         <div class="input-row">
-          <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Rua Itaquera, São Paulo)" value="Rua Itaquera, São Paulo">
+          <input type="text" id="origin-input" placeholder="Ponto de Partida" value="Hotel Emiliano, São Paulo">
           <button class="gps-btn" onclick="useCurrentLocation()">📍 GPS</button>
         </div>
-        <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Aricanduva, São Paulo)" value="Shopping Aricanduva, São Paulo">
+        <input type="text" id="destination-input" placeholder="Para onde vamos?" value="Shopping Aricanduva, São Paulo">
       </div>
 
       <button class="btn-calc" id="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
@@ -430,7 +438,7 @@
 
       <div class="driver-card">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="font-size: 28px;" id="driver-avatar-icon">👨‍✈️</div>
+          <div style="font-size: 28px;">👨‍✈️</div>
           <div>
             <h4 id="driver-name" style="font-size: 15px; font-weight: 700;">Carlos Eduardo</h4>
             <p style="font-size: 12px; color: #666;">⭐ 4.9 (1.420 viagens)</p>
@@ -449,43 +457,41 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
   
   <script>
-    // Inicialização do Mapa Leaflet
-    const initialCoords = [-23.5453, -46.4742]; // Ponto inicial (Zona Leste / SP)
-    const map = L.map('map', { zoomControl: false }).setView(initialCoords, 14);
+    // Inicialização do Mapa
+    const map = L.map('map', { zoomControl: false }).setView([-23.55052, -46.633309], 13);
 
-    // Servidor de Azulejos do OpenStreetMap (Camada Visível do Mapa)
+    // Camada Visual do Mapa
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Força o mapa a recalcular o tamanho na abertura para não ficar em branco
-    window.addEventListener('load', () => {
-      setTimeout(() => { map.invalidateSize(); }, 200);
+    // Garante renderização total ao carregar
+    setTimeout(() => { map.invalidateSize(); }, 300);
+
+    // Ícones em Div HTML com Emoji (Nunca quebram)
+    const carEmojiIcon = L.divIcon({
+      html: '<div class="vehicle-emoji">🚗</div>',
+      className: '',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
     });
 
-    const carIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
-    });
-
-    const motoIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',
+    const motoEmojiIcon = L.divIcon({
+      html: '<div class="vehicle-emoji">🏍️</div>',
+      className: '',
       iconSize: [30, 30],
       iconAnchor: [15, 15]
     });
 
     let mainRoutingControl = null;
-    let driverApproachControl = null;
     let activeDriverMarker = null;
     let animationInterval = null;
 
-    let userOriginCoords = null;
-    let userDestCoords = null;
+    let userOriginCoords = [-23.5615, -46.6661]; // Coordenada Padrão (Hotel Emiliano)
+    let userDestCoords = [-23.5658, -46.4682];  // Coordenada Padrão (Aricanduva)
     let distanceKm = 0;
     let selectedCategory = "Marcha X";
     let searchTimeout = null;
@@ -517,18 +523,17 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           userOriginCoords = [position.coords.latitude, position.coords.longitude];
-          document.getElementById('origin-input').value = "Minha Localização Atual (GPS)";
+          document.getElementById('origin-input').value = "Minha Localização (GPS)";
           map.setView(userOriginCoords, 15);
-          L.marker(userOriginCoords).addTo(map).bindPopup("Você está aqui").openPopup();
         }, () => {
-          alert("Não foi possível obter a localização via GPS.");
+          alert("GPS indisponível no momento.");
         });
       }
     }
 
-    // Geocodificação de Endereço via Nominatim
+    // Busca Endereço
     async function geocode(address) {
-      if (address.includes("GPS") && userOriginCoords) return userOriginCoords;
+      if (address.includes("GPS")) return userOriginCoords;
       try {
         const query = address.toLowerCase().includes('são paulo') ? address : `${address}, São Paulo, SP, Brasil`;
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
@@ -538,12 +543,11 @@
           return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
         }
       } catch (err) {
-        console.error("Erro na busca de endereço:", err);
+        console.warn("Geocode indisponível, usando estimativa de rota.");
       }
       return null;
     }
 
-    // Cálculo de Rota real pelas vias
     async function calculateTrip() {
       const btnCalc = document.getElementById('btn-calc');
       const originText = document.getElementById('origin-input').value.trim();
@@ -557,15 +561,11 @@
       btnCalc.innerText = "⏳ Buscando Rota...";
       btnCalc.disabled = true;
 
-      userOriginCoords = await geocode(originText);
-      userDestCoords = await geocode(destText);
+      const originGeocoded = await geocode(originText);
+      const destGeocoded = await geocode(destText);
 
-      if (!userOriginCoords || !userDestCoords) {
-        alert('Endereço não localizado. Digite o nome da rua e número.');
-        btnCalc.innerText = "🔍 Buscar Rota e Preços";
-        btnCalc.disabled = false;
-        return;
-      }
+      if (originGeocoded) userOriginCoords = originGeocoded;
+      if (destGeocoded) userDestCoords = destGeocoded;
 
       if (mainRoutingControl) map.removeControl(mainRoutingControl);
 
@@ -576,9 +576,7 @@
         ],
         lineOptions: { styles: [{ color: '#d32f2f', weight: 6 }] },
         createMarker: function(i, wp) {
-          return L.marker(wp.latLng, {
-            title: i === 0 ? "Origem" : "Destino"
-          });
+          return L.marker(wp.latLng, { title: i === 0 ? "Origem" : "Destino" });
         }
       }).addTo(map);
 
@@ -614,18 +612,12 @@
       });
 
       mainRoutingControl.on('routingerror', function() {
-        alert("Erro ao traçar rota pelas ruas. Verifique os endereços.");
         btnCalc.innerText = "🔍 Buscar Rota e Preços";
         btnCalc.disabled = false;
       });
     }
 
     function confirmTrip() {
-      if (!userOriginCoords) {
-        alert('Calcule uma rota primeiro!');
-        return;
-      }
-
       document.getElementById('booking-section').style.display = 'none';
       document.getElementById('searching-section').style.display = 'block';
       document.getElementById('searching-title').innerText = `Procurando ${selectedCategory}...`;
@@ -648,37 +640,27 @@
           document.getElementById('driver-plate').innerText = "ABC-1234";
         }
 
-        // Gera o ponto de partida do motorista perto da origem informada pelo passageiro
-        let driverStartLat = userOriginCoords[0] + 0.006;
-        let driverStartLng = userOriginCoords[1] + 0.006;
+        let driverStartLat = userOriginCoords[0] + 0.005;
+        let driverStartLng = userOriginCoords[1] + 0.005;
 
         startDriverApproach(driverStartLat, driverStartLng);
 
-      }, 3000);
+      }, 2500);
     }
 
-    // Cálculo da direção/ângulo para virar a frente do carrinho nas curvas
     function calculateBearing(startLat, startLng, destLat, destLng) {
-      const startLatRad = startLat * Math.PI / 180;
-      const startLngRad = startLng * Math.PI / 180;
-      const destLatRad = destLat * Math.PI / 180;
-      const destLngRad = destLng * Math.PI / 180;
-
-      const y = Math.sin(destLngRad - startLngRad) * Math.cos(destLatRad);
-      const x = Math.cos(startLatRad) * Math.sin(destLatRad) -
-                Math.sin(startLatRad) * Math.cos(destLatRad) * Math.cos(destLngRad - startLngRad);
-      
-      let bearing = Math.atan2(y, x) * 180 / Math.PI;
-      return (bearing + 360) % 360;
+      const y = Math.sin((destLng - startLng) * Math.PI / 180) * Math.cos(destLat * Math.PI / 180);
+      const x = Math.cos(startLat * Math.PI / 180) * Math.sin(destLat * Math.PI / 180) -
+                Math.sin(startLat * Math.PI / 180) * Math.cos(destLat * Math.PI / 180) * Math.cos((destLng - startLng) * Math.PI / 180);
+      return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
     }
 
-    // Animação do motorista vindo pelas ruas com curva e rotação
     function startDriverApproach(startLat, startLng) {
       if (mainRoutingControl) map.removeControl(mainRoutingControl);
 
-      const vehicleIcon = selectedCategory === "Envios Moto" ? motoIcon : carIcon;
+      const vehicleIcon = selectedCategory === "Envios Moto" ? motoEmojiIcon : carEmojiIcon;
 
-      driverApproachControl = L.Routing.control({
+      const approachControl = L.Routing.control({
         waypoints: [
           L.latLng(startLat, startLng),
           L.latLng(userOriginCoords[0], userOriginCoords[1])
@@ -687,34 +669,25 @@
         createMarker: function() { return null; }
       }).addTo(map);
 
-      driverApproachControl.on('routesfound', function(e) {
+      approachControl.on('routesfound', function(e) {
         const routePoints = e.routes[0].coordinates;
         let pointIndex = 0;
         const totalPoints = routePoints.length;
 
-        // Criar marcador com rotação ativada
-        activeDriverMarker = L.marker([startLat, startLng], { 
-          icon: vehicleIcon,
-          rotationAngle: 0
-        }).addTo(map);
-
+        activeDriverMarker = L.marker([startLat, startLng], { icon: vehicleIcon }).addTo(map);
         map.fitBounds(L.latLngBounds(routePoints), { padding: [60, 60] });
-
-        document.getElementById('driver-status-title').innerText = "Motorista a caminho!";
-        document.getElementById('driver-eta-text').innerText = "Chega em 3 minutos";
-        document.getElementById('driver-eta-text').style.display = "block";
-        document.getElementById('arrival-notice').style.display = "none";
 
         animationInterval = setInterval(() => {
           if (pointIndex < totalPoints) {
             const currentPt = routePoints[pointIndex];
             
-            // Aponta a frente do veículo para o próximo ponto da via
             if (pointIndex < totalPoints - 1) {
               const nextPt = routePoints[pointIndex + 1];
               const angle = calculateBearing(currentPt.lat, currentPt.lng, nextPt.lat, nextPt.lng);
-              if (activeDriverMarker.setRotationAngle) {
-                activeDriverMarker.setRotationAngle(angle);
+              const el = activeDriverMarker.getElement();
+              if (el) {
+                const inner = el.querySelector('.vehicle-emoji');
+                if (inner) inner.style.transform = `rotate(${angle}deg)`;
               }
             }
 
@@ -734,14 +707,13 @@
             document.getElementById('driver-eta-text').style.display = "none";
             document.getElementById('arrival-notice').style.display = "block";
           }
-        }, 200);
+        }, 180);
       });
     }
 
     function cancelSearch() {
       if (searchTimeout) clearTimeout(searchTimeout);
       if (animationInterval) clearInterval(animationInterval);
-      if (driverApproachControl) map.removeControl(driverApproachControl);
       if (activeDriverMarker) map.removeLayer(activeDriverMarker);
 
       document.getElementById('searching-section').style.display = 'none';
