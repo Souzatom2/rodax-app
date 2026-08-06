@@ -3,21 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rodax - Mobilidade</title>
+  <title>Mete Marcha - Mobilidade</title>
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     
     body, html {
       height: 100%;
       width: 100%;
+      overflow: hidden;
     }
     
     #map {
@@ -29,46 +31,111 @@
       z-index: 1;
     }
     
+    /* Painel Inferior Flutuante */
     .bottom-panel {
       position: absolute;
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
-      width: 90%;
-      max-width: 400px;
+      width: 92%;
+      max-width: 420px;
       background: #ffffff;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+    .panel-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: #d32f2f;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .input-group {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     
     .input-group input {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 16px;
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #f8f9fa;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: #d32f2f;
+      background: #fff;
+    }
+
+    /* Categorias de Veículos */
+    .ride-options {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .ride-card {
+      flex: 1;
+      border: 2px solid #eee;
+      border-radius: 10px;
+      padding: 10px 5px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .ride-card.selected {
+      border-color: #d32f2f;
+      background-color: #ffebee;
+    }
+
+    .ride-card h4 {
+      font-size: 13px;
+      color: #333;
+    }
+
+    .ride-card .price {
+      font-size: 15px;
+      font-weight: bold;
+      color: #d32f2f;
+      margin-top: 5px;
+    }
+
+    .info-summary {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 12px;
+      text-align: center;
     }
     
     .btn-primary {
       width: 100%;
-      padding: 14px;
-      background-color: #007bff;
+      padding: 15px;
+      background-color: #d32f2f;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3);
     }
     
     .btn-primary:hover {
-      background-color: #0056b3;
+      background-color: #b71c1c;
+    }
+
+    /* Ocultar painel padrão do Leaflet Routing */
+    .leaflet-routing-container {
+      display: none !important;
     }
   </style>
 </head>
@@ -77,13 +144,38 @@
   <div id="map"></div>
 
   <div class="bottom-panel">
+    <div class="panel-title">🚗 Mete Marcha</div>
+    
     <div class="input-group">
-      <input type="text" placeholder="Para onde vamos?">
+      <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)">
     </div>
-    <button class="btn-primary">Solicitar Viagem</button>
+    
+    <div class="input-group">
+      <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Ibirapuera)">
+    </div>
+
+    <div class="ride-options">
+      <div class="ride-card selected" onclick="selectCategory('X', 2.2, this)">
+        <h4>Marcha X</h4>
+        <div class="price" id="price-X">R$ --</div>
+      </div>
+      <div class="ride-card" onclick="selectCategory('Comfort', 2.8, this)">
+        <h4>Comfort</h4>
+        <div class="price" id="price-Comfort">R$ --</div>
+      </div>
+      <div class="ride-card" onclick="selectCategory('Black', 3.6, this)">
+        <h4>Black</h4>
+        <div class="price" id="price-Black">R$ --</div>
+      </div>
+    </div>
+
+    <div class="info-summary" id="trip-info">Digite a origem e o destino para calcular</div>
+
+    <button class="btn-primary" onclick="calculateTrip()">Calcular Viagem</button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   
   <script>
     const map = L.map('map').setView([-23.55052, -46.633308], 13);
@@ -91,6 +183,102 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
+
+    // Ícone Personalizado do Carrinho Vermelho
+    const redCarIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png', // Carrinho vermelho
+      iconSize: [38, 38],
+      iconAnchor: [19, 19]
+    });
+
+    let routingControl = null;
+    let distanceKm = 0;
+    let selectedRate = 2.2;
+
+    function selectCategory(category, rate, element) {
+      document.querySelectorAll('.ride-card').forEach(card => card.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedRate = rate;
+      updatePrices();
+    }
+
+    async function geocode(address) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', São Paulo, Brasil')}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      }
+      return null;
+    }
+
+    async function calculateTrip() {
+      const originText = document.getElementById('origin-input').value;
+      const destText = document.getElementById('destination-input').value;
+
+      if (!originText || !destText) {
+        alert('Por favor, preencha a origem e o destino!');
+        return;
+      }
+
+      document.getElementById('trip-info').innerText = "Metendo marcha na rota...";
+
+      const originCoords = await geocode(originText);
+      const destCoords = await geocode(destText);
+
+      if (!originCoords || !destCoords) {
+        alert('Não foi possível encontrar um dos endereços.');
+        document.getElementById('trip-info').innerText = "Erro ao localizar endereços.";
+        return;
+      }
+
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+
+      routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(originCoords[0], originCoords[1]),
+          L.latLng(destCoords[0], destCoords[1])
+        ],
+        lineOptions: {
+          styles: [{ color: '#d32f2f', weight: 6 }]
+        },
+        createMarker: function(i, waypoint, n) {
+          // Coloca o carrinho vermelho na origem
+          if (i === 0) {
+            return L.marker(waypoint.latLng, { icon: redCarIcon });
+          }
+          return L.marker(waypoint.latLng);
+        }
+      }).addTo(map);
+
+      routingControl.on('routesfound', function(e) {
+        const routes = e.routes;
+        const summary = routes[0].summary;
+        
+        distanceKm = summary.totalDistance / 1000;
+        const timeMinutes = Math.round(summary.totalTime / 60);
+
+        document.getElementById('trip-info').innerText = `Distância: ${distanceKm.toFixed(1)} km • Tempo est.: ${timeMinutes} min`;
+
+        updatePrices();
+      });
+    }
+
+    function updatePrices() {
+      if (distanceKm === 0) return;
+
+      const baseFare = 5.00;
+
+      const priceX = baseFare + (distanceKm * 2.20);
+      const priceComfort = baseFare + (distanceKm * 2.80);
+      const priceBlack = baseFare + (distanceKm * 3.60);
+
+      document.getElementById('price-X').innerText = `R$ ${priceX.toFixed(2)}`;
+      document.getElementById('price-Comfort').innerText = `R$ ${priceComfort.toFixed(2)}`;
+      document.getElementById('price-Black').innerText = `R$ ${priceBlack.toFixed(2)}`;
+    }
   </script>
 
 </body>
