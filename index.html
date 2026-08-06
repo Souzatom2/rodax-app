@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Mete Marcha - Mobilidade</title>
+  <title>Mete Marcha - Mobilidade Urbana</title>
   
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' https:; connect-src 'self' https:;">
 
@@ -301,4 +301,483 @@
       border-radius: 12px;
       font-size: 16px;
       font-weight: 700;
-      cursor: pointer
+      cursor: pointer;
+      margin-top: 12px;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    }
+
+    .searching-screen, .driver-screen {
+      display: none;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .radar-spinner {
+      width: 55px;
+      height: 55px;
+      border: 4px solid #ffebee;
+      border-top: 4px solid #d32f2f;
+      border-radius: 50%;
+      margin: 15px auto;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .driver-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      margin: 15px 0;
+      text-align: left;
+    }
+
+    .btn-cancel {
+      width: 100%;
+      padding: 12px;
+      background: #eee;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .leaflet-routing-container {
+      display: none !important;
+    }
+
+    .vehicle-emoji {
+      font-size: 28px;
+      line-height: 1;
+      text-align: center;
+      transition: transform 0.2s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div class="bottom-panel">
+    <div class="drag-handle"></div>
+
+    <div id="booking-section">
+      <div class="brand-header">
+        <div class="brand-logo">METE <span>MARCHA</span></div>
+      </div>
+      
+      <div class="input-box">
+        <div class="input-row">
+          <span class="input-icon">🟢</span>
+          <input type="text" id="origin-input" placeholder="Ponto de Partida" value="Hotel Emiliano, São Paulo">
+          <button class="gps-btn" onclick="useCurrentLocation()">📍 GPS</button>
+        </div>
+
+        <button class="add-stop-btn" id="add-stop-trigger" onclick="toggleStopField()">➕ Adicionar parada</button>
+
+        <div class="input-row stop-row" id="stop-container">
+          <span class="input-icon">🟡</span>
+          <input type="text" id="stop-input" placeholder="Endereço da Parada">
+          <button class="remove-stop-btn" onclick="toggleStopField()">✕</button>
+        </div>
+
+        <div class="input-row">
+          <span class="input-icon">🔴</span>
+          <input type="text" id="destination-input" placeholder="Para onde vamos?" value="Shopping Aricanduva, São Paulo">
+        </div>
+      </div>
+
+      <button class="btn-calc" id="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
+
+      <div class="ride-list">
+        
+        <div class="ride-item selected" onclick="selectOption(this, 'Marcha X')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🚗</div>
+            <div class="ride-details">
+              <h4>Marcha X 👤4</h4>
+              <p id="time-X">--:-- · -- min</p>
+              <p class="sub-desc">Viagens baratas</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-X">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Envios Moto')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🏍️</div>
+            <div class="ride-details">
+              <h4>Envios Moto</h4>
+              <p id="time-Moto">--:-- · -- min</p>
+              <p class="sub-desc">Envie itens pequenos rapidamente</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Moto">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Comfort')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🚘</div>
+            <div class="ride-details">
+              <h4>Comfort 👤4</h4>
+              <p id="time-Comfort">--:-- · -- min</p>
+              <p class="sub-desc">Carros mais novos e espaçosos</p>
+              <span class="badge">Mais rápido</span>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Comfort">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Black')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🖤</div>
+            <div class="ride-details">
+              <h4>Black 👤4</h4>
+              <p id="time-Black">--:-- · -- min</p>
+              <p class="sub-desc">Carros de luxo e atendimento VIP</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Black">R$ --</div>
+        </div>
+
+      </div>
+
+      <div class="payment-bar" onclick="changePaymentMethod()">
+        <span id="payment-text">💳 Cartão de Crédito</span>
+        <span>Mudar ❯</span>
+      </div>
+
+      <button class="btn-submit" id="btn-confirm-text" onclick="confirmTrip()">Escolha Marcha X</button>
+    </div>
+
+    <div class="searching-screen" id="searching-section">
+      <h3 style="color: #d32f2f;" id="searching-title">Procurando motorista...</h3>
+      <div class="radar-spinner"></div>
+      <p style="color: #666; font-size: 14px;">Conectando aos motoristas mais próximos...</p>
+      <button class="btn-cancel" onclick="cancelSearch()" style="margin-top: 15px;">Cancelar Solicitação</button>
+    </div>
+
+    <div class="driver-screen" id="driver-section">
+      <h3 id="driver-status-title" style="color: #111; text-align: left; font-size: 18px;">Motorista a caminho!</h3>
+      <p id="driver-eta-text" style="color: #d32f2f; text-align: left; font-weight: 700; font-size: 14px; margin-top: 2px;">Chega em 3 minutos</p>
+      
+      <div id="arrival-notice" style="display: none; text-align: left;">
+        <span style="background: #2e7d32; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; display: inline-block; margin-top: 6px;">🔔 O motorista chegou ao local de embarque!</span>
+      </div>
+
+      <div class="driver-card">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="font-size: 28px;">👨‍✈️</div>
+          <div>
+            <h4 id="driver-name" style="font-size: 15px; font-weight: 700;">Carlos Eduardo</h4>
+            <p style="font-size: 12px; color: #666;">⭐ 4.9 (1.420 viagens)</p>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <h5 id="driver-car" style="font-size: 13px; font-weight: 700;">Hyundai HB20</h5>
+          <span style="background: #eee; border: 1px solid #ccc; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; font-weight: 700;" id="driver-plate">ABC-1234</span>
+        </div>
+      </div>
+
+      <button class="btn-cancel" onclick="cancelSearch()">Cancelar Viagem</button>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  
+  <script>
+    const map = L.map('map', { zoomControl: false }).setView([-23.55052, -46.633309], 13);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    setTimeout(() => { map.invalidateSize(); }, 300);
+
+    const carEmojiIcon = L.divIcon({
+      html: '<div class="vehicle-emoji">🚗</div>',
+      className: '',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+
+    const motoEmojiIcon = L.divIcon({
+      html: '<div class="vehicle-emoji">🏍️</div>',
+      className: '',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+
+    let mainRoutingControl = null;
+    let activeDriverMarker = null;
+    let animationInterval = null;
+
+    let userOriginCoords = [-23.5615, -46.6661]; 
+    let userStopCoords = null;
+    let userDestCoords = [-23.5658, -46.4682];  
+    let distanceKm = 0;
+    let selectedCategory = "Marcha X";
+    let searchTimeout = null;
+
+    const paymentMethods = ["💳 Cartão de Crédito", "💵 Dinheiro", "⚡ PIX", "🍎 Apple Pay"];
+    let currentPaymentIndex = 0;
+
+    function toggleStopField() {
+      const stopContainer = document.getElementById('stop-container');
+      const addStopBtn = document.getElementById('add-stop-trigger');
+      const stopInput = document.getElementById('stop-input');
+
+      if (stopContainer.classList.contains('active')) {
+        stopContainer.classList.remove('active');
+        addStopBtn.style.display = 'block';
+        stopInput.value = '';
+        userStopCoords = null;
+      } else {
+        stopContainer.classList.add('active');
+        addStopBtn.style.display = 'none';
+      }
+    }
+
+    function changePaymentMethod() {
+      currentPaymentIndex = (currentPaymentIndex + 1) % paymentMethods.length;
+      document.getElementById('payment-text').innerText = paymentMethods[currentPaymentIndex];
+    }
+
+    function selectOption(element, categoryName) {
+      document.querySelectorAll('.ride-item').forEach(item => item.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedCategory = categoryName;
+      document.getElementById('btn-confirm-text').innerText = `Escolha ${selectedCategory}`;
+    }
+
+    function getArrivalTime(addMinutes) {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + addMinutes);
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    }
+
+    function useCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          userOriginCoords = [position.coords.latitude, position.coords.longitude];
+          document.getElementById('origin-input').value = "Minha Localização (GPS)";
+          map.setView(userOriginCoords, 15);
+        }, () => {
+          alert("GPS indisponível no momento.");
+        });
+      }
+    }
+
+    async function geocode(address) {
+      if (!address) return null;
+      if (address.includes("GPS")) return userOriginCoords;
+      try {
+        const query = address.toLowerCase().includes('são paulo') ? address : `${address}, São Paulo, SP, Brasil`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+      } catch (err) {
+        console.warn("Geocode indisponível:", err);
+      }
+      return null;
+    }
+
+    async function calculateTrip() {
+      const btnCalc = document.getElementById('btn-calc');
+      const originText = document.getElementById('origin-input').value.trim();
+      const stopText = document.getElementById('stop-input').value.trim();
+      const destText = document.getElementById('destination-input').value.trim();
+
+      if (!originText || !destText) {
+        alert('Por favor, informe a origem e o destino!');
+        return;
+      }
+
+      btnCalc.innerText = "⏳ Buscando Rota...";
+      btnCalc.disabled = true;
+
+      const originGeocoded = await geocode(originText);
+      const stopGeocoded = stopText ? await geocode(stopText) : null;
+      const destGeocoded = await geocode(destText);
+
+      if (originGeocoded) userOriginCoords = originGeocoded;
+      if (stopGeocoded) userStopCoords = stopGeocoded;
+      if (destGeocoded) userDestCoords = destGeocoded;
+
+      if (mainRoutingControl) map.removeControl(mainRoutingControl);
+
+      const waypoints = [L.latLng(userOriginCoords[0], userOriginCoords[1])];
+      if (userStopCoords && stopText) {
+        waypoints.push(L.latLng(userStopCoords[0], userStopCoords[1]));
+      }
+      waypoints.push(L.latLng(userDestCoords[0], userDestCoords[1]));
+
+      mainRoutingControl = L.Routing.control({
+        waypoints: waypoints,
+        lineOptions: { styles: [{ color: '#d32f2f', weight: 6 }] },
+        createMarker: function(i, wp) {
+          return L.marker(wp.latLng);
+        }
+      }).addTo(map);
+
+      mainRoutingControl.on('routesfound', function(e) {
+        const routes = e.routes;
+        const summary = routes[0].summary;
+        
+        distanceKm = summary.totalDistance / 1000;
+        const baseTime = Math.round(summary.totalTime / 60);
+
+        const tX = baseTime;
+        const tMoto = Math.max(1, baseTime - 3);
+        const tComfort = Math.max(1, baseTime - 2);
+        const tBlack = baseTime;
+
+        document.getElementById('time-X').innerText = `${getArrivalTime(tX)} · ${tX} min`;
+        document.getElementById('time-Moto').innerText = `${getArrivalTime(tMoto)} · ${tMoto} min`;
+        document.getElementById('time-Comfort').innerText = `${getArrivalTime(tComfort)} · ${tComfort} min`;
+        document.getElementById('time-Black').innerText = `${getArrivalTime(tBlack)} · ${tBlack} min`;
+
+        const extraStopCost = (userStopCoords && stopText) ? 5.00 : 0;
+        const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40) + extraStopCost;
+        const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20) + extraStopCost;
+        const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50) + extraStopCost;
+        const pBlack = 15.00 + (distanceKm * 4.80) + (baseTime * 0.60) + extraStopCost;
+
+        document.getElementById('price-X').innerText = `R$ ${pX.toFixed(2)}`;
+        document.getElementById('price-Moto').innerText = `R$ ${pMoto.toFixed(2)}`;
+        document.getElementById('price-Comfort').innerText = `R$ ${pComfort.toFixed(2)}`;
+        document.getElementById('price-Black').innerText = `R$ ${pBlack.toFixed(2)}`;
+
+        btnCalc.innerText = "🔍 Buscar Rota e Preços";
+        btnCalc.disabled = false;
+      });
+
+      mainRoutingControl.on('routingerror', function() {
+        btnCalc.innerText = "🔍 Buscar Rota e Preços";
+        btnCalc.disabled = false;
+      });
+    }
+
+    function confirmTrip() {
+      document.getElementById('booking-section').style.display = 'none';
+      document.getElementById('searching-section').style.display = 'block';
+      document.getElementById('searching-title').innerText = `Procurando ${selectedCategory}...`;
+
+      searchTimeout = setTimeout(() => {
+        document.getElementById('searching-section').style.display = 'none';
+        document.getElementById('driver-section').style.display = 'block';
+
+        if (selectedCategory === "Envios Moto") {
+          document.getElementById('driver-name').innerText = "Lucas Silva";
+          document.getElementById('driver-car').innerText = "Honda CG 160";
+          document.getElementById('driver-plate').innerText = "MTO-9988";
+        } else if (selectedCategory === "Black") {
+          document.getElementById('driver-name').innerText = "Roberto Almeida";
+          document.getElementById('driver-car').innerText = "Toyota Corolla";
+          document.getElementById('driver-plate').innerText = "BLK-5000";
+        } else {
+          document.getElementById('driver-name').innerText = "Carlos Eduardo";
+          document.getElementById('driver-car').innerText = "Hyundai HB20";
+          document.getElementById('driver-plate').innerText = "ABC-1234";
+        }
+
+        let driverStartLat = userOriginCoords[0] + 0.005;
+        let driverStartLng = userOriginCoords[1] + 0.005;
+
+        startDriverApproach(driverStartLat, driverStartLng);
+
+      }, 2500);
+    }
+
+    function calculateBearing(startLat, startLng, destLat, destLng) {
+      const y = Math.sin((destLng - startLng) * Math.PI / 180) * Math.cos(destLat * Math.PI / 180);
+      const x = Math.cos(startLat * Math.PI / 180) * Math.sin(destLat * Math.PI / 180) -
+                Math.sin(startLat * Math.PI / 180) * Math.cos(destLat * Math.PI / 180) * Math.cos((destLng - startLng) * Math.PI / 180);
+      return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+    }
+
+    function startDriverApproach(startLat, startLng) {
+      if (mainRoutingControl) map.removeControl(mainRoutingControl);
+
+      const vehicleIcon = selectedCategory === "Envios Moto" ? motoEmojiIcon : carEmojiIcon;
+
+      const approachControl = L.Routing.control({
+        waypoints: [
+          L.latLng(startLat, startLng),
+          L.latLng(userOriginCoords[0], userOriginCoords[1])
+        ],
+        lineOptions: { styles: [{ color: '#2e7d32', weight: 6 }] },
+        createMarker: function() { return null; }
+      }).addTo(map);
+
+      approachControl.on('routesfound', function(e) {
+        const routePoints = e.routes[0].coordinates;
+        let pointIndex = 0;
+        const totalPoints = routePoints.length;
+
+        activeDriverMarker = L.marker([startLat, startLng], { icon: vehicleIcon }).addTo(map);
+        map.fitBounds(L.latLngBounds(routePoints), { padding: [60, 60] });
+
+        animationInterval = setInterval(() => {
+          if (pointIndex < totalPoints) {
+            const currentPt = routePoints[pointIndex];
+            
+            if (pointIndex < totalPoints - 1) {
+              const nextPt = routePoints[pointIndex + 1];
+              const angle = calculateBearing(currentPt.lat, currentPt.lng, nextPt.lat, nextPt.lng);
+              const el = activeDriverMarker.getElement();
+              if (el) {
+                const inner = el.querySelector('.vehicle-emoji');
+                if (inner) inner.style.transform = `rotate(${angle}deg)`;
+              }
+            }
+
+            activeDriverMarker.setLatLng([currentPt.lat, currentPt.lng]);
+
+            const progress = pointIndex / totalPoints;
+            if (progress > 0.66) {
+              document.getElementById('driver-eta-text').innerText = "Chega em 1 minuto";
+            } else if (progress > 0.33) {
+              document.getElementById('driver-eta-text').innerText = "Chega em 2 minutos";
+            }
+
+            pointIndex++;
+          } else {
+            clearInterval(animationInterval);
+            document.getElementById('driver-status-title').innerText = "Cheguei no local!";
+            document.getElementById('driver-eta-text').style.display = "none";
+            document.getElementById('arrival-notice').style.display = "block";
+          }
+        }, 180);
+      });
+    }
+
+    function cancelSearch() {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      if (animationInterval) clearInterval(animationInterval);
+      if (activeDriverMarker) map.removeLayer(activeDriverMarker);
+
+      document.getElementById('searching-section').style.display = 'none';
+      document.getElementById('driver-section').style.display = 'none';
+      document.getElementById('booking-section').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
