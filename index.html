@@ -32,7 +32,6 @@
       z-index: 1;
     }
     
-    /* Painel Inferior */
     .bottom-panel {
       position: absolute;
       bottom: 0;
@@ -108,7 +107,6 @@
       background-color: #ffcdd2;
     }
 
-    /* Lista Vertical de Veículos */
     .ride-list {
       display: flex;
       flex-direction: column;
@@ -120,7 +118,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border: 2px solid #eee;
       border-radius: 12px;
       background: #fff;
@@ -140,17 +138,17 @@
     .ride-info-left {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 12px;
     }
 
-    .ride-icon {
-      font-size: 28px;
-      width: 40px;
-      text-align: center;
+    .ride-img {
+      width: 55px;
+      height: 38px;
+      object-fit: contain;
     }
 
     .ride-details h4 {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: #111;
       display: flex;
@@ -159,35 +157,33 @@
     }
 
     .ride-details p {
-      font-size: 13px;
+      font-size: 12px;
       color: #666;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     .ride-details .sub-desc {
-      font-size: 12px;
+      font-size: 11px;
       color: #888;
-      margin-top: 1px;
     }
 
     .badge {
       display: inline-block;
       background: #d32f2f;
       color: white;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       padding: 2px 6px;
       border-radius: 4px;
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     .ride-price {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 800;
       color: #d32f2f;
     }
 
-    /* Barramento de Pagamento */
     .payment-bar {
       display: flex;
       align-items: center;
@@ -200,7 +196,6 @@
       color: #333;
     }
 
-    /* Botão Principal Vermelho */
     .btn-submit {
       width: 100%;
       padding: 16px;
@@ -244,10 +239,10 @@
       
       <div class="ride-item selected" onclick="selectOption(this)">
         <div class="ride-info-left">
-          <div class="ride-icon">🚗</div>
+          <img src="https://img.freepik.com/free-psd/white-hatchback-car-isolated_23-2151853172.png" class="ride-img" alt="Marcha X">
           <div class="ride-details">
             <h4>Marcha X 👤4</h4>
-            <p id="time-X">-- min est.</p>
+            <p id="time-X">--:-- · -- min</p>
             <p class="sub-desc">Viagens baratas</p>
           </div>
         </div>
@@ -256,10 +251,10 @@
 
       <div class="ride-item" onclick="selectOption(this)">
         <div class="ride-info-left">
-          <div class="ride-icon">🏍️</div>
+          <img src="https://img.freepik.com/free-psd/red-delivery-motorbike-isolated_23-2151853200.png" class="ride-img" alt="Envios Moto">
           <div class="ride-details">
             <h4>Envios Moto</h4>
-            <p id="time-Moto">-- min est.</p>
+            <p id="time-Moto">--:-- · -- min</p>
             <p class="sub-desc">Envie itens pequenos sem gastar muito</p>
           </div>
         </div>
@@ -268,10 +263,10 @@
 
       <div class="ride-item" onclick="selectOption(this)">
         <div class="ride-info-left">
-          <div class="ride-icon">🚘</div>
+          <img src="https://img.freepik.com/free-psd/silver-sedan-car-isolated_23-2151853180.png" class="ride-img" alt="Comfort">
           <div class="ride-details">
             <h4>Comfort 👤4</h4>
-            <p id="time-Comfort">-- min est.</p>
+            <p id="time-Comfort">--:-- · -- min</p>
             <p class="sub-desc">Carros mais novos e espaçosos</p>
             <span class="badge">Mais rápido</span>
           </div>
@@ -281,11 +276,11 @@
 
       <div class="ride-item" onclick="selectOption(this)">
         <div class="ride-info-left">
-          <div class="ride-icon">🖤</div>
+          <img src="https://img.freepik.com/free-psd/black-suv-car-isolated_23-2151853195.png" class="ride-img" alt="Black">
           <div class="ride-details">
             <h4>Black 👤4</h4>
-            <p id="time-Black">-- min est.</p>
-            <p class="sub-desc">Carros de luxo e motoristas parceiros top</p>
+            <p id="time-Black">--:-- · -- min</p>
+            <p class="sub-desc">Carros de luxo e atendimento VIP</p>
           </div>
         </div>
         <div class="ride-price" id="price-Black">R$ --</div>
@@ -305,16 +300,35 @@
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   
   <script>
-    const map = L.map('map').setView([-23.55052, -46.633308], 13);
+    const map = L.map('map').setView([-23.55052, -46.633308], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    const redCarIcon = L.icon({
+    const carIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png',
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+
+    const motoIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
+    });
+
+    const nearbyDrivers = [
+      { lat: -23.5512, lng: -46.6340, type: 'car' },
+      { lat: -23.5485, lng: -46.6310, type: 'car' },
+      { lat: -23.5530, lng: -46.6370, type: 'moto' },
+      { lat: -23.5470, lng: -46.6360, type: 'car' },
+      { lat: -23.5545, lng: -46.6300, type: 'moto' }
+    ];
+
+    nearbyDrivers.forEach(driver => {
+      const icon = driver.type === 'car' ? carIcon : motoIcon;
+      L.marker([driver.lat, driver.lng], { icon: icon }).addTo(map);
     });
 
     let routingControl = null;
@@ -323,6 +337,15 @@
     function selectOption(element) {
       document.querySelectorAll('.ride-item').forEach(item => item.classList.remove('selected'));
       element.classList.add('selected');
+    }
+
+    // Função para calcular horário de chegada em relógio (ex: 19:14)
+    function getArrivalTime(addMinutes) {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() + addMinutes);
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
     }
 
     async function geocode(address) {
@@ -365,7 +388,7 @@
           styles: [{ color: '#d32f2f', weight: 6 }]
         },
         createMarker: function(i, waypoint, n) {
-          if (i === 0) return L.marker(waypoint.latLng, { icon: redCarIcon });
+          if (i === 0) return L.marker(waypoint.latLng, { icon: carIcon });
           return L.marker(waypoint.latLng);
         }
       }).addTo(map);
@@ -377,13 +400,19 @@
         distanceKm = summary.totalDistance / 1000;
         const baseTime = Math.round(summary.totalTime / 60);
 
-        // Previsão de chegada
-        document.getElementById('time-X').innerText = `${baseTime} min`;
-        document.getElementById('time-Moto').innerText = `${Math.max(1, baseTime - 3)} min`;
-        document.getElementById('time-Comfort').innerText = `${Math.max(1, baseTime - 2)} min`;
-        document.getElementById('time-Black').innerText = `${baseTime} min`;
+        // Tempos em minutos para cada categoria
+        const tX = baseTime;
+        const tMoto = Math.max(1, baseTime - 3);
+        const tComfort = Math.max(1, baseTime - 2);
+        const tBlack = baseTime;
 
-        // Fórmula ajustada para bater exatamente com os valores de mercado (Base + Distância + Tempo)
+        // Formatação Estilo Uber (Horário de Chegada + Duração em min)
+        document.getElementById('time-X').innerText = `${getArrivalTime(tX)} · ${tX} min`;
+        document.getElementById('time-Moto').innerText = `${getArrivalTime(tMoto)} · ${tMoto} min`;
+        document.getElementById('time-Comfort').innerText = `${getArrivalTime(tComfort)} · ${tComfort} min`;
+        document.getElementById('time-Black').innerText = `${getArrivalTime(tBlack)} · ${tBlack} min`;
+
+        // Preços ajustados dinamicamente
         const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40);
         const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20);
         const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50);
