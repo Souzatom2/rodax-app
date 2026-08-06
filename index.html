@@ -118,7 +118,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
+      padding: 12px 14px;
       border: 2px solid #eee;
       border-radius: 12px;
       background: #fff;
@@ -141,10 +141,10 @@
       gap: 12px;
     }
 
-    .ride-img {
-      width: 55px;
-      height: 38px;
-      object-fit: contain;
+    .ride-icon-box {
+      font-size: 26px;
+      width: 45px;
+      text-align: center;
     }
 
     .ride-details h4 {
@@ -184,16 +184,25 @@
       color: #d32f2f;
     }
 
+    /* Barra de Seleção de Pagamento Interativa */
     .payment-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 0;
-      border-top: 1px solid #eee;
+      padding: 12px 14px;
+      border: 1px solid #eee;
+      border-radius: 10px;
       margin-top: 10px;
       font-size: 14px;
       font-weight: 600;
       color: #333;
+      background: #fdfdfd;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .payment-bar:hover {
+      background: #f5f5f5;
     }
 
     .btn-submit {
@@ -206,13 +215,47 @@
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 5px;
+      margin-top: 12px;
       box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
       transition: background 0.2s;
     }
 
     .btn-submit:hover {
       background-color: #b71c1c;
+    }
+
+    /* Tela de Procurando Motorista */
+    .searching-screen {
+      display: none;
+      text-align: center;
+      padding: 20px 10px;
+    }
+
+    .radar-spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #ffebee;
+      border-top: 5px solid #d32f2f;
+      border-radius: 50%;
+      margin: 15px auto;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .btn-cancel {
+      width: 100%;
+      padding: 12px;
+      background: #eee;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      margin-top: 15px;
+      cursor: pointer;
     }
 
     .leaflet-routing-container {
@@ -226,74 +269,85 @@
 
   <div class="bottom-panel">
     <div class="drag-handle"></div>
-    <div class="panel-header">🚗 Mete Marcha</div>
-    
-    <div class="input-box">
-      <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)">
-      <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Ibirapuera)">
-    </div>
 
-    <button class="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
-
-    <div class="ride-list">
+    <div id="booking-section">
+      <div class="panel-header">🚗 Mete Marcha</div>
       
-      <div class="ride-item selected" onclick="selectOption(this)">
-        <div class="ride-info-left">
-          <img src="https://img.freepik.com/free-psd/white-hatchback-car-isolated_23-2151853172.png" class="ride-img" alt="Marcha X">
-          <div class="ride-details">
-            <h4>Marcha X 👤4</h4>
-            <p id="time-X">--:-- · -- min</p>
-            <p class="sub-desc">Viagens baratas</p>
-          </div>
-        </div>
-        <div class="ride-price" id="price-X">R$ --</div>
+      <div class="input-box">
+        <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)">
+        <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Ibirapuera)">
       </div>
 
-      <div class="ride-item" onclick="selectOption(this)">
-        <div class="ride-info-left">
-          <img src="https://img.freepik.com/free-psd/red-delivery-motorbike-isolated_23-2151853200.png" class="ride-img" alt="Envios Moto">
-          <div class="ride-details">
-            <h4>Envios Moto</h4>
-            <p id="time-Moto">--:-- · -- min</p>
-            <p class="sub-desc">Envie itens pequenos sem gastar muito</p>
+      <button class="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
+
+      <div class="ride-list">
+        
+        <div class="ride-item selected" onclick="selectOption(this, 'Marcha X')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🚗</div>
+            <div class="ride-details">
+              <h4>Marcha X 👤4</h4>
+              <p id="time-X">--:-- · -- min</p>
+              <p class="sub-desc">Viagens baratas</p>
+            </div>
           </div>
+          <div class="ride-price" id="price-X">R$ --</div>
         </div>
-        <div class="ride-price" id="price-Moto">R$ --</div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Envios Moto')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🏍️</div>
+            <div class="ride-details">
+              <h4>Envios Moto</h4>
+              <p id="time-Moto">--:-- · -- min</p>
+              <p class="sub-desc">Envie itens pequenos sem gastar muito</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Moto">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Comfort')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🚘</div>
+            <div class="ride-details">
+              <h4>Comfort 👤4</h4>
+              <p id="time-Comfort">--:-- · -- min</p>
+              <p class="sub-desc">Carros mais novos e espaçosos</p>
+              <span class="badge">Mais rápido</span>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Comfort">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Black')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🖤</div>
+            <div class="ride-details">
+              <h4>Black 👤4</h4>
+              <p id="time-Black">--:-- · -- min</p>
+              <p class="sub-desc">Carros de luxo e atendimento VIP</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Black">R$ --</div>
+        </div>
+
       </div>
 
-      <div class="ride-item" onclick="selectOption(this)">
-        <div class="ride-info-left">
-          <img src="https://img.freepik.com/free-psd/silver-sedan-car-isolated_23-2151853180.png" class="ride-img" alt="Comfort">
-          <div class="ride-details">
-            <h4>Comfort 👤4</h4>
-            <p id="time-Comfort">--:-- · -- min</p>
-            <p class="sub-desc">Carros mais novos e espaçosos</p>
-            <span class="badge">Mais rápido</span>
-          </div>
-        </div>
-        <div class="ride-price" id="price-Comfort">R$ --</div>
+      <div class="payment-bar" onclick="changePaymentMethod()">
+        <span id="payment-text">💳 Cartão de Crédito</span>
+        <span>Mudar ❯</span>
       </div>
 
-      <div class="ride-item" onclick="selectOption(this)">
-        <div class="ride-info-left">
-          <img src="https://img.freepik.com/free-psd/black-suv-car-isolated_23-2151853195.png" class="ride-img" alt="Black">
-          <div class="ride-details">
-            <h4>Black 👤4</h4>
-            <p id="time-Black">--:-- · -- min</p>
-            <p class="sub-desc">Carros de luxo e atendimento VIP</p>
-          </div>
-        </div>
-        <div class="ride-price" id="price-Black">R$ --</div>
-      </div>
-
+      <button class="btn-submit" id="btn-confirm-text" onclick="confirmTrip()">Escolha Marcha X</button>
     </div>
 
-    <div class="payment-bar">
-      <span>💳 Apple Pay / Cartão / PIX</span>
-      <span>❯</span>
+    <div class="searching-screen" id="searching-section">
+      <h3 style="color: #d32f2f;" id="searching-title">Procurando seu motorista...</h3>
+      <div class="radar-spinner"></div>
+      <p style="color: #666; font-size: 14px;">Estamos contactando os motoristas mais próximos de você.</p>
+      <button class="btn-cancel" onclick="cancelSearch()">Cancelar Solicitação</button>
     </div>
 
-    <button class="btn-submit" onclick="confirmTrip()">Escolha Mete Marcha</button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -333,13 +387,24 @@
 
     let routingControl = null;
     let distanceKm = 0;
+    let selectedCategory = "Marcha X";
 
-    function selectOption(element) {
-      document.querySelectorAll('.ride-item').forEach(item => item.classList.remove('selected'));
-      element.classList.add('selected');
+    // Opções de Pagamento Alternáveis
+    const paymentMethods = ["💳 Cartão de Crédito", "💵 Dinheiro", "⚡ PIX", "🍎 Apple Pay"];
+    let currentPaymentIndex = 0;
+
+    function changePaymentMethod() {
+      currentPaymentIndex = (currentPaymentIndex + 1) % paymentMethods.length;
+      document.getElementById('payment-text').innerText = paymentMethods[currentPaymentIndex];
     }
 
-    // Função para calcular horário de chegada em relógio (ex: 19:14)
+    function selectOption(element, categoryName) {
+      document.querySelectorAll('.ride-item').forEach(item => item.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedCategory = categoryName;
+      document.getElementById('btn-confirm-text').innerText = `Escolha ${selectedCategory}`;
+    }
+
     function getArrivalTime(addMinutes) {
       const now = new Date();
       now.setMinutes(now.getMinutes() + addMinutes);
@@ -400,19 +465,16 @@
         distanceKm = summary.totalDistance / 1000;
         const baseTime = Math.round(summary.totalTime / 60);
 
-        // Tempos em minutos para cada categoria
         const tX = baseTime;
         const tMoto = Math.max(1, baseTime - 3);
         const tComfort = Math.max(1, baseTime - 2);
         const tBlack = baseTime;
 
-        // Formatação Estilo Uber (Horário de Chegada + Duração em min)
         document.getElementById('time-X').innerText = `${getArrivalTime(tX)} · ${tX} min`;
         document.getElementById('time-Moto').innerText = `${getArrivalTime(tMoto)} · ${tMoto} min`;
         document.getElementById('time-Comfort').innerText = `${getArrivalTime(tComfort)} · ${tComfort} min`;
         document.getElementById('time-Black').innerText = `${getArrivalTime(tBlack)} · ${tBlack} min`;
 
-        // Preços ajustados dinamicamente
         const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40);
         const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20);
         const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50);
@@ -430,7 +492,16 @@
         alert('Calcule uma rota primeiro!');
         return;
       }
-      alert('🚀 Viagem solicitada com sucesso! Procurando motorista Mete Marcha...');
+
+      // Oculta formulário e exibe animação de busca na tela
+      document.getElementById('booking-section').style.display = 'none';
+      document.getElementById('searching-section').style.display = 'block';
+      document.getElementById('searching-title').innerText = `Procurando ${selectedCategory}...`;
+    }
+
+    function cancelSearch() {
+      document.getElementById('searching-section').style.display = 'none';
+      document.getElementById('booking-section').style.display = 'block';
     }
   </script>
 
