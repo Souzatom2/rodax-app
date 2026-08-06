@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mete Marcha - Mobilidade</title>
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -16,19 +16,19 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     
-    body, html {
+    html, body {
       height: 100%;
       width: 100%;
       overflow: hidden;
-      background: #f4f4f4;
+      background: #e5e3df;
     }
     
     #map {
-      height: 100vh;
-      width: 100vw;
       position: absolute;
       top: 0;
+      bottom: 0;
       left: 0;
+      right: 0;
       z-index: 1;
     }
     
@@ -41,32 +41,41 @@
       width: 100%;
       max-width: 450px;
       background: #ffffff;
-      padding: 20px;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
-      max-height: 85vh;
+      padding: 16px 20px 24px 20px;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.25);
+      max-height: 80vh;
       overflow-y: auto;
     }
 
     .drag-handle {
-      width: 40px;
+      width: 36px;
       height: 4px;
       background: #e0e0e0;
       border-radius: 2px;
-      margin: 0 auto 15px auto;
+      margin: 0 auto 12px auto;
     }
 
-    .panel-header {
-      font-size: 20px;
-      font-weight: 800;
-      margin-bottom: 15px;
-      color: #d32f2f;
+    .brand-header {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      margin-bottom: 16px;
     }
-    
+
+    .brand-logo {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: #111111;
+      text-transform: uppercase;
+    }
+
+    .brand-logo span {
+      color: #d32f2f;
+    }
+
     .input-box {
       display: flex;
       flex-direction: column;
@@ -77,7 +86,7 @@
     .input-box input {
       width: 100%;
       padding: 12px 14px;
-      border: 1px solid #eee;
+      border: 1px solid #e2e2e2;
       border-radius: 10px;
       font-size: 14px;
       background: #f8f9fa;
@@ -107,6 +116,13 @@
       background-color: #ffcdd2;
     }
 
+    .btn-calc:disabled {
+      background-color: #eee;
+      color: #999;
+      border-color: #ccc;
+      cursor: not-allowed;
+    }
+
     .ride-list {
       display: flex;
       flex-direction: column;
@@ -119,7 +135,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 12px 14px;
-      border: 2px solid #eee;
+      border: 2px solid #f0f0f0;
       border-radius: 12px;
       background: #fff;
       cursor: pointer;
@@ -143,7 +159,7 @@
 
     .ride-icon-box {
       font-size: 26px;
-      width: 45px;
+      width: 40px;
       text-align: center;
     }
 
@@ -223,18 +239,17 @@
       background-color: #b71c1c;
     }
 
-    /* Tela 1: Procurando Motorista */
-    .searching-screen {
+    .searching-screen, .driver-screen {
       display: none;
       text-align: center;
-      padding: 20px 10px;
+      padding: 10px 0;
     }
 
     .radar-spinner {
-      width: 60px;
-      height: 60px;
-      border: 5px solid #ffebee;
-      border-top: 5px solid #d32f2f;
+      width: 55px;
+      height: 55px;
+      border: 4px solid #ffebee;
+      border-top: 4px solid #d32f2f;
       border-radius: 50%;
       margin: 15px auto;
       animation: spin 1s linear infinite;
@@ -245,79 +260,16 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Tela 2: Motorista Encontrado */
-    .driver-screen {
-      display: none;
-      padding: 10px 0;
-    }
-
-    .driver-status {
-      font-size: 18px;
-      font-weight: 800;
-      color: #111;
-      margin-bottom: 5px;
-    }
-
-    .driver-time {
-      font-size: 14px;
-      color: #d32f2f;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
-
     .driver-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: #f8f9fa;
-      padding: 15px;
+      padding: 14px;
       border-radius: 12px;
       border: 1px solid #eee;
-      margin-bottom: 15px;
-    }
-
-    .driver-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: #ddd;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-    }
-
-    .driver-details h4 {
-      font-size: 16px;
-      font-weight: 700;
-      color: #111;
-    }
-
-    .driver-details p {
-      font-size: 13px;
-      color: #666;
-    }
-
-    .car-info {
-      text-align: right;
-    }
-
-    .car-info h5 {
-      font-size: 14px;
-      font-weight: 700;
-      color: #111;
-    }
-
-    .car-info .plate {
-      display: inline-block;
-      background: #eee;
-      border: 1px solid #ccc;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-weight: 700;
-      font-size: 12px;
-      margin-top: 4px;
+      margin: 15px 0;
+      text-align: left;
     }
 
     .btn-cancel {
@@ -328,7 +280,6 @@
       border: none;
       border-radius: 10px;
       font-weight: 700;
-      margin-top: 10px;
       cursor: pointer;
     }
 
@@ -345,14 +296,16 @@
     <div class="drag-handle"></div>
 
     <div id="booking-section">
-      <div class="panel-header">🚗 Mete Marcha</div>
+      <div class="brand-header">
+        <div class="brand-logo">METE <span>MARCHA</span></div>
+      </div>
       
       <div class="input-box">
-        <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)">
-        <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Ibirapuera)">
+        <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)" value="Av. Paulista, 1000">
+        <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Ibirapuera)" value="Shopping Ibirapuera">
       </div>
 
-      <button class="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
+      <button class="btn-calc" id="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
 
       <div class="ride-list">
         
@@ -374,7 +327,7 @@
             <div class="ride-details">
               <h4>Envios Moto</h4>
               <p id="time-Moto">--:-- · -- min</p>
-              <p class="sub-desc">Envie itens pequenos sem gastar muito</p>
+              <p class="sub-desc">Envie itens pequenos rapidamente</p>
             </div>
           </div>
           <div class="ride-price" id="price-Moto">R$ --</div>
@@ -416,27 +369,27 @@
     </div>
 
     <div class="searching-screen" id="searching-section">
-      <h3 style="color: #d32f2f;" id="searching-title">Procurando seu motorista...</h3>
+      <h3 style="color: #d32f2f;" id="searching-title">Procurando motorista...</h3>
       <div class="radar-spinner"></div>
-      <p style="color: #666; font-size: 14px;">Conectando com motoristas próximos...</p>
-      <button class="btn-cancel" onclick="cancelSearch()">Cancelar Solicitação</button>
+      <p style="color: #666; font-size: 14px;">Conectando aos motoristas mais próximos...</p>
+      <button class="btn-cancel" onclick="cancelSearch()" style="margin-top: 15px;">Cancelar Solicitação</button>
     </div>
 
     <div class="driver-screen" id="driver-section">
-      <div class="driver-status">Motorista a caminho!</div>
-      <div class="driver-time" id="driver-eta">Chega em 3 min</div>
+      <h3 style="color: #111; text-align: left; font-size: 18px;">Motorista a caminho!</h3>
+      <p style="color: #d32f2f; text-align: left; font-weight: 700; font-size: 14px; margin-top: 2px;">Chega em 3 minutos</p>
 
       <div class="driver-card">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="driver-avatar">👨‍✈️</div>
-          <div class="driver-details">
-            <h4 id="driver-name">Carlos Eduardo</h4>
-            <p>⭐ 4.9 (1.420 viagens)</p>
+          <div style="font-size: 28px;">👨‍✈️</div>
+          <div>
+            <h4 id="driver-name" style="font-size: 15px; font-weight: 700;">Carlos Eduardo</h4>
+            <p style="font-size: 12px; color: #666;">⭐ 4.9 (1.420 viagens)</p>
           </div>
         </div>
-        <div class="car-info">
-          <h5 id="driver-car">Hyundai HB20</h5>
-          <span class="plate" id="driver-plate">ABC-1234</span>
+        <div style="text-align: right;">
+          <h5 id="driver-car" style="font-size: 13px; font-weight: 700;">Hyundai HB20</h5>
+          <span style="background: #eee; border: 1px solid #ccc; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; font-weight: 700;" id="driver-plate">ABC-1234</span>
         </div>
       </div>
 
@@ -449,24 +402,27 @@
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   
   <script>
-    const map = L.map('map').setView([-23.55052, -46.633308], 14);
+    // 1. Inicialização Global e Direta do Mapa
+    const map = L.map('map', { zoomControl: false }).setView([-23.55052, -46.633308], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
+    // Ícones dos motoristas
     const carIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
-    });
-
-    const motoIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',
       iconSize: [30, 30],
       iconAnchor: [15, 15]
     });
 
+    const motoIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/2972/2972185.png',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+
+    // Motoristas Simulados no Mapa
     const nearbyDrivers = [
       { lat: -23.5512, lng: -46.6340, type: 'car' },
       { lat: -23.5485, lng: -46.6310, type: 'car' },
@@ -508,37 +464,53 @@
       return `${hours}:${minutes}`;
     }
 
+    // Busca de coordenadas via Nominatim
     async function geocode(address) {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', São Paulo, Brasil')}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data && data.length > 0) {
-        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      try {
+        const query = address.includes('São Paulo') ? address : `${address}, São Paulo, Brasil`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+      } catch (err) {
+        console.error("Erro na busca do endereço:", err);
       }
       return null;
     }
 
+    // Função Principal de Cálculo da Rota
     async function calculateTrip() {
-      const originText = document.getElementById('origin-input').value;
-      const destText = document.getElementById('destination-input').value;
+      const btnCalc = document.getElementById('btn-calc');
+      const originText = document.getElementById('origin-input').value.trim();
+      const destText = document.getElementById('destination-input').value.trim();
 
       if (!originText || !destText) {
         alert('Por favor, informe a origem e o destino!');
         return;
       }
 
+      // Estado de carregamento no botão
+      btnCalc.innerText = "⏳ Buscando Rota...";
+      btnCalc.disabled = true;
+
       const originCoords = await geocode(originText);
       const destCoords = await geocode(destText);
 
       if (!originCoords || !destCoords) {
-        alert('Endereço não localizado. Tente digitar de forma mais detalhada.');
+        alert('Endereço não localizado. Tente colocar nome de rua e número.');
+        btnCalc.innerText = "🔍 Buscar Rota e Preços";
+        btnCalc.disabled = false;
         return;
       }
 
+      // Limpa rota anterior do mapa se existir
       if (routingControl) {
         map.removeControl(routingControl);
       }
 
+      // Cria a nova linha vermelha da rota
       routingControl = L.Routing.control({
         waypoints: [
           L.latLng(originCoords[0], originCoords[1]),
@@ -547,10 +519,7 @@
         lineOptions: {
           styles: [{ color: '#d32f2f', weight: 6 }]
         },
-        createMarker: function(i, waypoint, n) {
-          if (i === 0) return L.marker(waypoint.latLng, { icon: carIcon });
-          return L.marker(waypoint.latLng);
-        }
+        createMarker: function() { return null; }
       }).addTo(map);
 
       routingControl.on('routesfound', function(e) {
@@ -565,11 +534,72 @@
         const tComfort = Math.max(1, baseTime - 2);
         const tBlack = baseTime;
 
+        // Atualiza horários no HTML
         document.getElementById('time-X').innerText = `${getArrivalTime(tX)} · ${tX} min`;
         document.getElementById('time-Moto').innerText = `${getArrivalTime(tMoto)} · ${tMoto} min`;
         document.getElementById('time-Comfort').innerText = `${getArrivalTime(tComfort)} · ${tComfort} min`;
         document.getElementById('time-Black').innerText = `${getArrivalTime(tBlack)} · ${tBlack} min`;
 
+        // Cálculo de preços dinâmicos
         const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40);
         const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20);
-        const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime *
+        const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50);
+        const pBlack = 15.00 + (distanceKm * 4.80) + (baseTime * 0.60);
+
+        document.getElementById('price-X').innerText = `R$ ${pX.toFixed(2)}`;
+        document.getElementById('price-Moto').innerText = `R$ ${pMoto.toFixed(2)}`;
+        document.getElementById('price-Comfort').innerText = `R$ ${pComfort.toFixed(2)}`;
+        document.getElementById('price-Black').innerText = `R$ ${pBlack.toFixed(2)}`;
+
+        // Restaura botão
+        btnCalc.innerText = "🔍 Buscar Rota e Preços";
+        btnCalc.disabled = false;
+      });
+
+      routingControl.on('routingerror', function() {
+        alert('Erro ao traçar rota. Verifique os endereços digitados.');
+        btnCalc.innerText = "🔍 Buscar Rota e Preços";
+        btnCalc.disabled = false;
+      });
+    }
+
+    function confirmTrip() {
+      if (distanceKm === 0) {
+        alert('Calcule uma rota primeiro clicando em "Buscar Rota e Preços"!');
+        return;
+      }
+
+      document.getElementById('booking-section').style.display = 'none';
+      document.getElementById('searching-section').style.display = 'block';
+      document.getElementById('searching-title').innerText = `Procurando ${selectedCategory}...`;
+
+      searchTimeout = setTimeout(() => {
+        document.getElementById('searching-section').style.display = 'none';
+        document.getElementById('driver-section').style.display = 'block';
+
+        if (selectedCategory === "Envios Moto") {
+          document.getElementById('driver-name').innerText = "Lucas Silva";
+          document.getElementById('driver-car').innerText = "Honda CG 160";
+          document.getElementById('driver-plate').innerText = "MTO-9988";
+        } else if (selectedCategory === "Black") {
+          document.getElementById('driver-name').innerText = "Roberto Almeida";
+          document.getElementById('driver-car').innerText = "Toyota Corolla";
+          document.getElementById('driver-plate').innerText = "BLK-5000";
+        } else {
+          document.getElementById('driver-name').innerText = "Carlos Eduardo";
+          document.getElementById('driver-car').innerText = "Hyundai HB20";
+          document.getElementById('driver-plate').innerText = "ABC-1234";
+        }
+      }, 4000);
+    }
+
+    function cancelSearch() {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      document.getElementById('searching-section').style.display = 'none';
+      document.getElementById('driver-section').style.display = 'none';
+      document.getElementById('booking-section').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
