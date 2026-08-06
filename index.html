@@ -283,6 +283,24 @@
       cursor: pointer;
     }
 
+    .arrival-badge {
+      background: #2e7d32;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-block;
+      margin-top: 6px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
     .leaflet-routing-container {
       display: none !important;
     }
@@ -376,12 +394,16 @@
     </div>
 
     <div class="driver-screen" id="driver-section">
-      <h3 style="color: #111; text-align: left; font-size: 18px;">Motorista a caminho!</h3>
-      <p style="color: #d32f2f; text-align: left; font-weight: 700; font-size: 14px; margin-top: 2px;">Chega em 3 minutos</p>
+      <h3 id="driver-status-title" style="color: #111; text-align: left; font-size: 18px;">Motorista a caminho!</h3>
+      <p id="driver-eta-text" style="color: #d32f2f; text-align: left; font-weight: 700; font-size: 14px; margin-top: 2px;">Chega em 3 minutos</p>
+      
+      <div id="arrival-notice" style="display: none; text-align: left;">
+        <span class="arrival-badge">🔔 O motorista chegou ao local de embarque!</span>
+      </div>
 
       <div class="driver-card">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="font-size: 28px;">👨‍✈️</div>
+          <div style="font-size: 28px;" id="driver-avatar-icon">👨‍✈️</div>
           <div>
             <h4 id="driver-name" style="font-size: 15px; font-weight: 700;">Carlos Eduardo</h4>
             <p style="font-size: 12px; color: #666;">⭐ 4.9 (1.420 viagens)</p>
@@ -402,14 +424,13 @@
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   
   <script>
-    // 1. Inicialização Global e Direta do Mapa
+    // Inicialização do Mapa
     const map = L.map('map', { zoomControl: false }).setView([-23.55052, -46.633308], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Ícones dos motoristas
     const carIcon = L.icon({
       iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png',
       iconSize: [30, 30],
@@ -422,7 +443,6 @@
       iconAnchor: [14, 14]
     });
 
-    // Motoristas Simulados no Mapa
     const nearbyDrivers = [
       { lat: -23.5512, lng: -46.6340, type: 'car' },
       { lat: -23.5485, lng: -46.6310, type: 'car' },
@@ -431,12 +451,20 @@
       { lat: -23.5545, lng: -46.6300, type: 'moto' }
     ];
 
+    let staticDriverMarkers = [];
     nearbyDrivers.forEach(driver => {
       const icon = driver.type === 'car' ? carIcon : motoIcon;
-      L.marker([driver.lat, driver.lng], { icon: icon }).addTo(map);
+      const marker = L.marker([driver.lat, driver.lng], { icon: icon }).addTo(map);
+      staticDriverMarkers.push(marker);
     });
 
     let routingControl = null;
+    let driverApproachControl = null;
+    let activeDriverMarker = null;
+    let animationInterval = null;
+
+    let userOriginCoords = null;
+    let userDestCoords = null;
     let distanceKm = 0;
     let selectedCategory = "Marcha X";
     let searchTimeout = null;
@@ -464,7 +492,6 @@
       return `${hours}:${minutes}`;
     }
 
-    // Busca de coordenadas via Nominatim
     async function geocode(address) {
       try {
         const query = address.includes('São Paulo') ? address : `${address}, São Paulo, Brasil`;
@@ -475,12 +502,11 @@
           return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
         }
       } catch (err) {
-        console.error("Erro na busca do endereço:", err);
+        console.error("Erro no geocode:", err);
       }
       return null;
     }
 
-    // Função Principal de Cálculo da Rota
     async function calculateTrip() {
       const btnCalc = document.getElementById('btn-calc');
       const originText = document.getElementById('origin-input').value.trim();
@@ -491,34 +517,27 @@
         return;
       }
 
-      // Estado de carregamento no botão
       btnCalc.innerText = "⏳ Buscando Rota...";
       btnCalc.disabled = true;
 
-      const originCoords = await geocode(originText);
-      const destCoords = await geocode(destText);
+      userOriginCoords = await geocode(originText);
+      userDestCoords = await geocode(destText);
 
-      if (!originCoords || !destCoords) {
+      if (!userOriginCoords || !userDestCoords) {
         alert('Endereço não localizado. Tente colocar nome de rua e número.');
         btnCalc.innerText = "🔍 Buscar Rota e Preços";
         btnCalc.disabled = false;
         return;
       }
 
-      // Limpa rota anterior do mapa se existir
-      if (routingControl) {
-        map.removeControl(routingControl);
-      }
+      if (routingControl) map.removeControl(routingControl);
 
-      // Cria a nova linha vermelha da rota
       routingControl = L.Routing.control({
         waypoints: [
-          L.latLng(originCoords[0], originCoords[1]),
-          L.latLng(destCoords[0], destCoords[1])
+          L.latLng(userOriginCoords[0], userOriginCoords[1]),
+          L.latLng(userDestCoords[0], userDestCoords[1])
         ],
-        lineOptions: {
-          styles: [{ color: '#d32f2f', weight: 6 }]
-        },
+        lineOptions: { styles: [{ color: '#d32f2f', weight: 6 }] },
         createMarker: function() { return null; }
       }).addTo(map);
 
@@ -534,13 +553,11 @@
         const tComfort = Math.max(1, baseTime - 2);
         const tBlack = baseTime;
 
-        // Atualiza horários no HTML
         document.getElementById('time-X').innerText = `${getArrivalTime(tX)} · ${tX} min`;
         document.getElementById('time-Moto').innerText = `${getArrivalTime(tMoto)} · ${tMoto} min`;
         document.getElementById('time-Comfort').innerText = `${getArrivalTime(tComfort)} · ${tComfort} min`;
         document.getElementById('time-Black').innerText = `${getArrivalTime(tBlack)} · ${tBlack} min`;
 
-        // Cálculo de preços dinâmicos
         const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40);
         const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20);
         const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50);
@@ -551,13 +568,6 @@
         document.getElementById('price-Comfort').innerText = `R$ ${pComfort.toFixed(2)}`;
         document.getElementById('price-Black').innerText = `R$ ${pBlack.toFixed(2)}`;
 
-        // Restaura botão
-        btnCalc.innerText = "🔍 Buscar Rota e Preços";
-        btnCalc.disabled = false;
-      });
-
-      routingControl.on('routingerror', function() {
-        alert('Erro ao traçar rota. Verifique os endereços digitados.');
         btnCalc.innerText = "🔍 Buscar Rota e Preços";
         btnCalc.disabled = false;
       });
@@ -573,9 +583,16 @@
       document.getElementById('searching-section').style.display = 'block';
       document.getElementById('searching-title').innerText = `Procurando ${selectedCategory}...`;
 
+      // Simula busca por 3.5 segundos e inicia o trajeto do motorista
       searchTimeout = setTimeout(() => {
         document.getElementById('searching-section').style.display = 'none';
         document.getElementById('driver-section').style.display = 'block';
+
+        // Esconde os motoristas estáticos no mapa
+        staticDriverMarkers.forEach(m => map.removeLayer(m));
+
+        let driverStartLat = userOriginCoords[0] + 0.008;
+        let driverStartLng = userOriginCoords[1] + 0.008;
 
         if (selectedCategory === "Envios Moto") {
           document.getElementById('driver-name').innerText = "Lucas Silva";
@@ -590,14 +607,83 @@
           document.getElementById('driver-car').innerText = "Hyundai HB20";
           document.getElementById('driver-plate').innerText = "ABC-1234";
         }
-      }, 4000);
+
+        // Desenha a rota de aproximação do motorista no mapa
+        startDriverApproach(driverStartLat, driverStartLng);
+
+      }, 3500);
+    }
+
+    // Traça o caminho do motorista até o usuário e anima em tempo real
+    function startDriverApproach(startLat, startLng) {
+      if (routingControl) map.removeControl(routingControl);
+
+      const driverIconToUse = selectedCategory === "Envios Moto" ? motoIcon : carIcon;
+
+      driverApproachControl = L.Routing.control({
+        waypoints: [
+          L.latLng(startLat, startLng),
+          L.latLng(userOriginCoords[0], userOriginCoords[1])
+        ],
+        lineOptions: { styles: [{ color: '#2e7d32', weight: 6 }] }, // Linha verde de aproximação
+        createMarker: function() { return null; }
+      }).addTo(map);
+
+      driverApproachControl.on('routesfound', function(e) {
+        const routePoints = e.routes[0].coordinates;
+        let pointIndex = 0;
+        const totalPoints = routePoints.length;
+
+        // Adiciona o marcador do motorista no ponto inicial
+        activeDriverMarker = L.marker([startLat, startLng], { icon: driverIconToUse }).addTo(map);
+
+        // Centraliza e ajusta o zoom do mapa na aproximação
+        map.fitBounds(L.latLngBounds(routePoints), { padding: [50, 50] });
+
+        // Reseta textos
+        document.getElementById('driver-status-title').innerText = "Motorista a caminho!";
+        document.getElementById('driver-eta-text').innerText = "Chega em 3 minutos";
+        document.getElementById('driver-eta-text').style.display = "block";
+        document.getElementById('arrival-notice').style.display = "none";
+
+        // Animação de movimento ponto a ponto ao longo da rota
+        animationInterval = setInterval(() => {
+          if (pointIndex < totalPoints) {
+            const currentPt = routePoints[pointIndex];
+            activeDriverMarker.setLatLng([currentPt.lat, currentPt.lng]);
+
+            // Atualiza tempo restante dinamicamente conforme aproxima
+            const progress = pointIndex / totalPoints;
+            if (progress > 0.66) {
+              document.getElementById('driver-eta-text').innerText = "Chega em 1 minuto";
+            } else if (progress > 0.33) {
+              document.getElementById('driver-eta-text').innerText = "Chega em 2 minutos";
+            }
+
+            pointIndex++;
+          } else {
+            // Chegou no local de embarque!
+            clearInterval(animationInterval);
+            document.getElementById('driver-status-title').innerText = "Cheguei no local!";
+            document.getElementById('driver-eta-text').style.display = "none";
+            document.getElementById('arrival-notice').style.display = "block";
+          }
+        }, 300); // Velocidade de caminhada no mapa
+      });
     }
 
     function cancelSearch() {
       if (searchTimeout) clearTimeout(searchTimeout);
+      if (animationInterval) clearInterval(animationInterval);
+      if (driverApproachControl) map.removeControl(driverApproachControl);
+      if (activeDriverMarker) map.removeLayer(activeDriverMarker);
+
       document.getElementById('searching-section').style.display = 'none';
       document.getElementById('driver-section').style.display = 'none';
       document.getElementById('booking-section').style.display = 'block';
+
+      // Restaura os motoristas estáticos
+      staticDriverMarkers.forEach(m => m.addTo(map));
     }
   </script>
 
