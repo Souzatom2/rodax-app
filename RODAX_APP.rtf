@@ -1,0 +1,514 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1046{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil Calibri;}}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl240\slmult1\f0\fs28\lang22 <!DOCTYPE html>\par
+<html lang="pt-br">\par
+<head>\par
+    <meta charset="UTF-8">\par
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">\par
+    <title>Rodax - Mobilidade</title>\par
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">\par
+    <style>\par
+        :root \{\par
+            --rodax-deep: #000c1d;\par
+            --rodax-blue: #0074D9;\par
+            --rodax-light: #7FDBFF;\par
+            --text-main: #FFFFFF;\par
+            --text-muted: #ccd6f6;\par
+            --card-bg: #0a192f;\par
+            --danger-red: #ff4136;\par
+        \}\par
+\par
+        * \{\par
+            margin: 0;\par
+            padding: 0;\par
+            box-sizing: border-box;\par
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\par
+        \}\par
+\par
+        body \{\par
+            background-color: var(--rodax-deep);\par
+            height: 100vh;\par
+            overflow: hidden;\par
+        \}\par
+\par
+        .app-container \{\par
+            position: relative;\par
+            height: 100%;\par
+            width: 100%;\par
+        \}\par
+\par
+        .hidden \{\par
+            display: none !important;\par
+        \}\par
+\par
+        /* Header */\par
+        .top-nav \{\par
+            position: absolute;\par
+            top: 20px;\par
+            left: 20px;\par
+            z-index: 10;\par
+        \}\par
+\par
+        .menu-btn \{\par
+            width: 50px;\par
+            height: 50px;\par
+            border-radius: 50%;\par
+            background: var(--card-bg);\par
+            border: 1px solid rgba(0, 116, 217, 0.3);\par
+            color: var(--text-main);\par
+            font-size: 20px;\par
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);\par
+            cursor: pointer;\par
+        \}\par
+\par
+        /* Map Placeholder */\par
+        #map-container \{\par
+            height: 100%;\par
+            width: 100%;\par
+            background: #001220;\par
+        \}\par
+\par
+        .map-placeholder \{\par
+            display: flex;\par
+            flex-direction: column;\par
+            align-items: center;\par
+            justify-content: center;\par
+            height: 100%;\par
+            color: var(--rodax-blue);\par
+        \}\par
+\par
+        .map-placeholder i \{\par
+            font-size: 50px;\par
+            margin-bottom: 10px;\par
+            opacity: 0.5;\par
+        \}\par
+\par
+        /* Bottom Sheet */\par
+        .bottom-sheet \{\par
+            position: absolute;\par
+            bottom: 0;\par
+            width: 100%;\par
+            background: var(--card-bg);\par
+            border-radius: 30px 30px 0 0;\par
+            padding: 20px;\par
+            z-index: 20;\par
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);\par
+            border-top: 1px solid rgba(0, 116, 217, 0.2);\par
+            max-height: 85vh;\par
+            overflow-y: auto;\par
+        \}\par
+\par
+        .drag-handle \{\par
+            width: 40px;\par
+            height: 5px;\par
+            background: rgba(255,255,255,0.2);\par
+            border-radius: 10px;\par
+            margin: 0 auto 15px;\par
+        \}\par
+\par
+        .header-search \{\par
+            display: flex;\par
+            justify-content: space-between;\par
+            align-items: center;\par
+            margin-bottom: 15px;\par
+        \}\par
+\par
+        .header-search h2 \{\par
+            color: var(--text-main);\par
+            font-size: 22px;\par
+        \}\par
+\par
+        .add-stop-btn \{\par
+            background: rgba(0, 116, 217, 0.15);\par
+            border: 1px solid var(--rodax-blue);\par
+            color: var(--rodax-light);\par
+            padding: 8px 12px;\par
+            border-radius: 20px;\par
+            cursor: pointer;\par
+            font-weight: bold;\par
+            font-size: 14px;\par
+            display: flex;\par
+            align-items: center;\par
+            gap: 6px;\par
+        \}\par
+\par
+        .route-inputs \{\par
+            display: flex;\par
+            flex-direction: column;\par
+            gap: 10px;\par
+            margin-bottom: 15px;\par
+        \}\par
+\par
+        .input-row \{\par
+            background: var(--rodax-deep);\par
+            border-radius: 12px;\par
+            padding: 12px 15px;\par
+            display: flex;\par
+            align-items: center;\par
+            gap: 12px;\par
+        \}\par
+\par
+        .origin-icon \{ color: var(--rodax-light); font-size: 12px; \}\par
+        .destination-icon \{ color: var(--rodax-blue); font-size: 12px; \}\par
+\par
+        .input-row input \{\par
+            background: transparent;\par
+            border: none;\par
+            color: var(--text-main);\par
+            font-size: 16px;\par
+            width: 100%;\par
+            outline: none;\par
+        \}\par
+\par
+        .remove-stop-btn \{\par
+            background: transparent;\par
+            border: none;\par
+            color: var(--danger-red);\par
+            cursor: pointer;\par
+            font-size: 16px;\par
+        \}\par
+\par
+        .confirm-btn \{\par
+            width: 100%;\par
+            background: var(--rodax-blue);\par
+            color: var(--text-main);\par
+            border: none;\par
+            padding: 15px;\par
+            border-radius: 12px;\par
+            font-size: 18px;\par
+            font-weight: bold;\par
+            cursor: pointer;\par
+            margin-bottom: 15px;\par
+        \}\par
+\par
+        /* Lista de Categorias */\par
+        .options-list \{\par
+            display: flex;\par
+            flex-direction: column;\par
+            gap: 12px;\par
+            margin-bottom: 20px;\par
+        \}\par
+\par
+        .option-card \{\par
+            display: flex;\par
+            justify-content: space-between;\par
+            align-items: center;\par
+            padding: 15px;\par
+            background: var(--rodax-deep);\par
+            border: 2px solid transparent;\par
+            border-radius: 16px;\par
+            cursor: pointer;\par
+            transition: 0.2s;\par
+        \}\par
+\par
+        .option-card.selected \{\par
+            border-color: var(--rodax-blue);\par
+            background: rgba(0, 116, 217, 0.1);\par
+        \}\par
+\par
+        .option-info \{\par
+            display: flex;\par
+            align-items: center;\par
+            gap: 15px;\par
+        \}\par
+\par
+        .option-icon \{\par
+            font-size: 26px;\par
+            color: var(--rodax-light);\par
+        \}\par
+\par
+        .option-icon.electric \{ color: #2ecc40; \}\par
+        .option-icon.black \{ color: #ffffff; \}\par
+\par
+        .option-info strong \{\par
+            color: var(--text-main);\par
+            font-size: 17px;\par
+            display: block;\par
+        \}\par
+\par
+        .option-info p \{\par
+            color: var(--text-muted);\par
+            font-size: 13px;\par
+        \}\par
+\par
+        .option-price .price \{\par
+            color: var(--text-main);\par
+            font-size: 19px;\par
+            font-weight: 700;\par
+        \}\par
+\par
+        .action-footer \{\par
+            display: flex;\par
+            gap: 10px;\par
+        \}\par
+\par
+        .back-btn \{\par
+            background: var(--rodax-deep);\par
+            border: 1px solid rgba(255,255,255,0.1);\par
+            color: var(--text-main);\par
+            width: 50px;\par
+            border-radius: 12px;\par
+            cursor: pointer;\par
+            font-size: 18px;\par
+        \}\par
+\par
+        .flex-grow \{ flex-grow: 1; \}\par
+\par
+        .location-item \{\par
+            display: flex;\par
+            align-items: center;\par
+            gap: 20px;\par
+            padding: 12px 0;\par
+            border-bottom: 1px solid rgba(255,255,255,0.05);\par
+        \}\par
+\par
+        .location-item i \{\par
+            width: 40px;\par
+            height: 40px;\par
+            background: rgba(0, 116, 217, 0.1);\par
+            border-radius: 50%;\par
+            display: flex;\par
+            align-items: center;\par
+            justify-content: center;\par
+            color: var(--rodax-light);\par
+        \}\par
+\par
+        .location-item strong \{ color: var(--text-main); font-size: 16px; \}\par
+        .location-item p \{ color: var(--text-muted); font-size: 13px; \}\par
+    </style>\par
+</head>\par
+<body>\par
+    <div class="app-container">\par
+        <header class="top-nav">\par
+            <button class="menu-btn"><i class="fa-solid fa-bars"></i></button>\par
+        </header>\par
+\par
+        <div id="map-container">\par
+            <div class="map-placeholder">\par
+                <i class="fa-solid fa-location-crosshairs"></i>\par
+                <p>O mapa ser\'e1 renderizado aqui</p>\par
+            </div>\par
+        </div>\par
+\par
+        <div class="bottom-sheet" id="bottomSheet">\par
+            <div class="drag-handle"></div>\par
+            \par
+            <div class="search-container" id="searchSection">\par
+                <div class="header-search">\par
+                    <h2>Para onde vamos?</h2>\par
+                    <button id="addStopBtn" class="add-stop-btn">\par
+                        <i class="fa-solid fa-plus"></i> Adicionar parada\par
+                    </button>\par
+                </div>\par
+\par
+                <div class="route-inputs" id="routeInputs">\par
+                    <div class="input-row">\par
+                        <i class="fa-solid fa-circle origin-icon"></i>\par
+                        <input type="text" value="Sua localiza\'e7\'e3o atual" readonly>\par
+                    </div>\par
+                    <div class="input-row destination">\par
+                        <i class="fa-solid fa-square destination-icon"></i>\par
+                        <input type="text" placeholder="Digite seu destino..." class="stop-input" id="mainDestination">\par
+                    </div>\par
+                </div>\par
+\par
+                <button class="confirm-btn" id="confirmRouteBtn">Calcular Tarifa</button>\par
+            </div>\par
+\par
+            <div class="ride-options-container hidden" id="rideOptionsSection">\par
+                <div class="options-list">\par
+                    <div class="option-card" onclick="selectOption(this)">\par
+                        <div class="option-info">\par
+                            <i class="fa-solid fa-box option-icon"></i>\par
+                            <div>\par
+                                <strong>Rodax Envio</strong>\par
+                                <p>Envio r\'e1pido de pacotes \f1\bullet  3 min</p>\par
+                            </div>\par
+                        </div>\par
+                        <div class="option-price">\par
+                            <span class="price" id="priceEnvio">R$ 0,00</span>\par
+                        </div>\par
+                    </div>\par
+\par
+                    <div class="option-card selected" onclick="selectOption(this)">\par
+                        <div class="option-info">\par
+                            <i class="fa-solid fa-car option-icon"></i>\par
+                            <div>\par
+                                <strong>Rodax X</strong>\par
+                                <p>Viagens econ\f0\'f4micas \f1\bullet  4 min</p>\par
+                            </div>\par
+                        </div>\par
+                        <div class="option-price">\par
+                            <span class="price" id="priceX">R$ 0,00</span>\par
+                        </div>\par
+                    </div>\par
+\par
+                    <div class="option-card" onclick="selectOption(this)">\par
+                        <div class="option-info">\par
+                            <i class="fa-solid fa-gauge-high option-icon"></i>\par
+                            <div>\par
+                                <strong>Rodax Prioridade</strong>\par
+                                <p>Embarque mais r\f0\'e1pido \f1\bullet  1 min</p>\par
+                            </div>\par
+                        </div>\par
+                        <div class="option-price">\par
+                            <span class="price" id="pricePrioridade">R$ 0,00</span>\par
+                        </div>\par
+                    </div>\par
+\par
+                    <div class="option-card" onclick="selectOption(this)">\par
+                        <div class="option-info">\par
+                            <i class="fa-solid fa-bolt option-icon electric"></i>\par
+                            <div>\par
+                                <strong>Rodax Green / El\f0\'e9trico</strong>\par
+                                <p>Ve\'edculos 100% el\'e9tricos \f1\bullet  5 min</p>\par
+                            </div>\par
+                        </div>\par
+                        <div class="option-price">\par
+                            <span class="price" id="priceEletrico">R$ 0,00</span>\par
+                        </div>\par
+                    </div>\par
+\par
+                    <div class="option-card" onclick="selectOption(this)">\par
+                        <div class="option-info">\par
+                            <i class="fa-solid fa-car-side option-icon black"></i>\par
+                            <div>\par
+                                <strong>Rodax Black</strong>\par
+                                <p>Carros de alto padr\f0\'e3o \f1\bullet  6 min</p>\par
+                            </div>\par
+                        </div>\par
+                        <div class="option-price">\par
+                            <span class="price" id="priceBlack">R$ 0,00</span>\par
+                        </div>\par
+                    </div>\par
+                </div>\par
+\par
+                <div class="action-footer">\par
+                    <button class="back-btn" id="backToSearchBtn"><i class="fa-solid fa-arrow-left"></i></button>\par
+                    <button class="confirm-btn flex-grow" id="requestRideBtn">Solicitar Rodax X</button>\par
+                </div>\par
+            </div>\par
+\par
+            <div class="quick-locations" id="quickLocations">\par
+                <div class="location-item">\par
+                    <i class="fa-solid fa-house"></i>\par
+                    <div>\par
+                        <strong>Casa</strong>\par
+                        <p>Rua Exemplo, 123</p>\par
+                    </div>\par
+                </div>\par
+                <div class="location-item">\par
+                    <i class="fa-solid fa-briefcase"></i>\par
+                    <div>\par
+                        <strong>Trabalho</strong>\par
+                        <p>Av. Corporativa, 456</p>\par
+                    </div>\par
+                </div>\par
+            </div>\par
+        </div>\par
+    </div>\par
+\par
+    <script>\par
+        let stopCount = 0;\par
+        const maxStops = 3;\par
+\par
+        const addStopBtn = document.getElementById('addStopBtn');\par
+        const routeInputs = document.getElementById('routeInputs');\par
+        const confirmRouteBtn = document.getElementById('confirmRouteBtn');\par
+        const backToSearchBtn = document.getElementById('backToSearchBtn');\par
+\par
+        const searchSection = document.getElementById('searchSection');\par
+        const rideOptionsSection = document.getElementById('rideOptionsSection');\par
+        const quickLocations = document.getElementById('quickLocations');\par
+\par
+        // Adicionar paradas\par
+        addStopBtn.addEventListener('click', () => \{\par
+            if (stopCount < maxStops) \{\par
+                stopCount++;\par
+                const newStopRow = document.createElement('div');\par
+                newStopRow.classList.add('input-row');\par
+                newStopRow.id = `stop-$\{stopCount\}`;\par
+\par
+                newStopRow.innerHTML = `\par
+                    <i class="fa-solid fa-location-dot" style="color: #7FDBFF;"></i>\par
+                    <input type="text" placeholder="Parada $\{stopCount\}..." class="stop-input">\par
+                    <button class="remove-stop-btn" onclick="removeStop('stop-$\{stopCount\}')">\par
+                        <i class="fa-solid fa-xmark"></i>\par
+                    </button>\par
+                `;\par
+\par
+                const destinationInput = routeInputs.querySelector('.destination');\par
+                routeInputs.insertBefore(newStopRow, destinationInput);\par
+\par
+                if (stopCount === maxStops) \{\par
+                    addStopBtn.style.display = 'none';\par
+                \}\par
+            \}\par
+        \});\par
+\par
+        function removeStop(id) \{\par
+            const stopElement = document.getElementById(id);\par
+            if (stopElement) \{\par
+                stopElement.remove();\par
+                stopCount--;\par
+                addStopBtn.style.display = 'flex';\par
+            \}\par
+        \}\par
+\par
+        // C\f0\'e1lculo silencioso de pre\'e7o din\'e2mico\par
+        function calculateDynamicPrice(distanceKm) \{\par
+            const baseFare = 5.00;\par
+            \par
+            const pricePerKmEnvio = 2.80;\par
+            const pricePerKmX = 3.20;\par
+            const pricePerKmPrioridade = 4.00;\par
+            const pricePerKmEletrico = 4.50;\par
+            const pricePerKmBlack = 6.50;\par
+\par
+            const currentHour = new Date().getHours();\par
+            let dynamicMultiplier = 1.0;\par
+\par
+            if ((currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 20)) \{\par
+                dynamicMultiplier = 1.5;\par
+            \} else \{\par
+                dynamicMultiplier = 1.2;\par
+            \}\par
+\par
+            const priceEnvio = (baseFare + (distanceKm * pricePerKmEnvio)) * dynamicMultiplier;\par
+            const priceX = (baseFare + (distanceKm * pricePerKmX)) * dynamicMultiplier;\par
+            const pricePrioridade = (baseFare + (distanceKm * pricePerKmPrioridade)) * dynamicMultiplier;\par
+            const priceEletrico = (baseFare + (distanceKm * pricePerKmEletrico)) * dynamicMultiplier;\par
+            const priceBlack = (baseFare + (distanceKm * pricePerKmBlack)) * dynamicMultiplier;\par
+\par
+            document.getElementById('priceEnvio').innerText = `R$ $\{priceEnvio.toFixed(2).replace('.', ',')\}`;\par
+            document.getElementById('priceX').innerText = `R$ $\{priceX.toFixed(2).replace('.', ',')\}`;\par
+            document.getElementById('pricePrioridade').innerText = `R$ $\{pricePrioridade.toFixed(2).replace('.', ',')\}`;\par
+            document.getElementById('priceEletrico').innerText = `R$ $\{priceEletrico.toFixed(2).replace('.', ',')\}`;\par
+            document.getElementById('priceBlack').innerText = `R$ $\{priceBlack.toFixed(2).replace('.', ',')\}`;\par
+        \}\par
+\par
+        confirmRouteBtn.addEventListener('click', () => \{\par
+            calculateDynamicPrice(11);\par
+            searchSection.classList.add('hidden');\par
+            quickLocations.classList.add('hidden');\par
+            rideOptionsSection.classList.remove('hidden');\par
+        \});\par
+\par
+        backToSearchBtn.addEventListener('click', () => \{\par
+            rideOptionsSection.classList.add('hidden');\par
+            searchSection.classList.remove('hidden');\par
+            quickLocations.classList.remove('hidden');\par
+        \});\par
+\par
+        function selectOption(element) \{\par
+            document.querySelectorAll('.option-card').forEach(card => card.classList.remove('selected'));\par
+            element.classList.add('selected');\par
+            \par
+            const categoryName = element.querySelector('strong').innerText;\par
+            document.getElementById('requestRideBtn').innerText = `Solicitar $\{categoryName\}`;\par
+        \}\par
+    </script>\par
+</body>\par
+</html>\par
+}
+ 
