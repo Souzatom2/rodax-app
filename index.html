@@ -20,6 +20,7 @@
       height: 100%;
       width: 100%;
       overflow: hidden;
+      background: #f4f4f4;
     }
     
     #map {
@@ -31,109 +32,172 @@
       z-index: 1;
     }
     
-    /* Painel Inferior Flutuante */
+    /* Painel Estilo Uber */
     .bottom-panel {
       position: absolute;
-      bottom: 20px;
+      bottom: 0;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
-      width: 92%;
-      max-width: 420px;
+      width: 100%;
+      max-width: 450px;
       background: #ffffff;
       padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
+      max-height: 85vh;
+      overflow-y: auto;
     }
 
-    .panel-title {
+    .drag-handle {
+      width: 40px;
+      height: 4px;
+      background: #e0e0e0;
+      border-radius: 2px;
+      margin: 0 auto 15px auto;
+    }
+
+    .panel-header {
       font-size: 20px;
-      font-weight: 800;
+      font-weight: 700;
       margin-bottom: 15px;
-      color: #d32f2f;
+      color: #000;
+    }
+    
+    .input-box {
       display: flex;
-      align-items: center;
+      flex-direction: column;
       gap: 8px;
+      margin-bottom: 15px;
     }
     
-    .input-group {
-      margin-bottom: 10px;
-    }
-    
-    .input-group input {
+    .input-box input {
       width: 100%;
       padding: 12px 14px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 15px;
-      background: #f8f9fa;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #f6f6f6;
       outline: none;
     }
 
-    .input-group input:focus {
-      border-color: #d32f2f;
+    .input-box input:focus {
+      border-color: #000;
       background: #fff;
     }
 
-    /* Categorias de Veículos */
-    .ride-options {
+    /* Lista Vertical de Veículos */
+    .ride-list {
       display: flex;
+      flex-direction: column;
       gap: 10px;
-      margin: 15px 0;
+      margin-bottom: 15px;
     }
 
-    .ride-card {
-      flex: 1;
-      border: 2px solid #eee;
-      border-radius: 10px;
-      padding: 10px 5px;
-      text-align: center;
+    .ride-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      background: #fff;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
 
-    .ride-card.selected {
-      border-color: #d32f2f;
-      background-color: #ffebee;
+    .ride-item:hover {
+      background: #f9f9f9;
     }
 
-    .ride-card h4 {
-      font-size: 13px;
-      color: #333;
+    .ride-item.selected {
+      border-color: #000;
+      background: #fff;
     }
 
-    .ride-card .price {
-      font-size: 15px;
-      font-weight: bold;
-      color: #d32f2f;
-      margin-top: 5px;
+    .ride-info-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
-    .info-summary {
+    .ride-icon {
+      font-size: 28px;
+      width: 40px;
+      text-align: center;
+    }
+
+    .ride-details h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ride-details p {
       font-size: 13px;
       color: #666;
-      margin-bottom: 12px;
-      text-align: center;
-    }
-    
-    .btn-primary {
-      width: 100%;
-      padding: 15px;
-      background-color: #d32f2f;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3);
-    }
-    
-    .btn-primary:hover {
-      background-color: #b71c1c;
+      margin-top: 2px;
     }
 
-    /* Ocultar painel padrão do Leaflet Routing */
+    .badge {
+      display: inline-block;
+      background: #276ef1;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    .ride-price {
+      font-size: 17px;
+      font-weight: 700;
+      color: #000;
+    }
+
+    /* Rodapé de Pagamento e Ação */
+    .payment-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-top: 1px solid #eee;
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background-color: #000000;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-calc {
+      width: 100%;
+      padding: 12px;
+      background-color: #e0e0e0;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 15px;
+    }
+
     .leaflet-routing-container {
       display: none !important;
     }
@@ -144,34 +208,71 @@
   <div id="map"></div>
 
   <div class="bottom-panel">
-    <div class="panel-title">🚗 Mete Marcha</div>
+    <div class="drag-handle"></div>
+    <div class="panel-header">Escolher uma viagem</div>
     
-    <div class="input-group">
+    <div class="input-box">
       <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)">
-    </div>
-    
-    <div class="input-group">
       <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Ibirapuera)">
     </div>
 
-    <div class="ride-options">
-      <div class="ride-card selected" onclick="selectCategory('X', 2.2, this)">
-        <h4>Marcha X</h4>
-        <div class="price" id="price-X">R$ --</div>
+    <button class="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
+
+    <div class="ride-list">
+      
+      <div class="ride-item selected" onclick="selectOption(this)">
+        <div class="ride-info-left">
+          <div class="ride-icon">🚗</div>
+          <div class="ride-details">
+            <h4>Marcha X 👤4</h4>
+            <p id="time-X">-- min est.</p>
+          </div>
+        </div>
+        <div class="ride-price" id="price-X">R$ --</div>
       </div>
-      <div class="ride-card" onclick="selectCategory('Comfort', 2.8, this)">
-        <h4>Comfort</h4>
-        <div class="price" id="price-Comfort">R$ --</div>
+
+      <div class="ride-item" onclick="selectOption(this)">
+        <div class="ride-info-left">
+          <div class="ride-icon">🏍️</div>
+          <div class="ride-details">
+            <h4>Marcha Moto</h4>
+            <p id="time-Moto">-- min est.</p>
+          </div>
+        </div>
+        <div class="ride-price" id="price-Moto">R$ --</div>
       </div>
-      <div class="ride-card" onclick="selectCategory('Black', 3.6, this)">
-        <h4>Black</h4>
-        <div class="price" id="price-Black">R$ --</div>
+
+      <div class="ride-item" onclick="selectOption(this)">
+        <div class="ride-info-left">
+          <div class="ride-icon">🚘</div>
+          <div class="ride-details">
+            <h4>Comfort</h4>
+            <p id="time-Comfort">-- min est.</p>
+            <span class="badge">Mais rápido</span>
+          </div>
+        </div>
+        <div class="ride-price" id="price-Comfort">R$ --</div>
       </div>
+
+      <div class="ride-item" onclick="selectOption(this)">
+        <div class="ride-info-left">
+          <div class="ride-icon">🖤</div>
+          <div class="ride-details">
+            <h4>Black</h4>
+            <p id="time-Black">-- min est.</p>
+          </div>
+        </div>
+        <div class="ride-price" id="price-Black">R$ --</div>
+      </div>
+
     </div>
 
-    <div class="info-summary" id="trip-info">Digite a origem e o destino para calcular</div>
+    <div class="payment-bar">
+      <span>💳 Apple Pay / Cartão</span>
+      <span>❯</span>
+    </div>
 
-    <button class="btn-primary" onclick="calculateTrip()">Calcular Viagem</button>
+    <button class="btn-submit" onclick="confirmTrip()">Escolha Mete Marcha</button>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -184,22 +285,18 @@
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // Ícone Personalizado do Carrinho Vermelho
     const redCarIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png', // Carrinho vermelho
-      iconSize: [38, 38],
-      iconAnchor: [19, 19]
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202003.png',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
     });
 
     let routingControl = null;
     let distanceKm = 0;
-    let selectedRate = 2.2;
 
-    function selectCategory(category, rate, element) {
-      document.querySelectorAll('.ride-card').forEach(card => card.classList.remove('selected'));
+    function selectOption(element) {
+      document.querySelectorAll('.ride-item').forEach(item => item.classList.remove('selected'));
       element.classList.add('selected');
-      selectedRate = rate;
-      updatePrices();
     }
 
     async function geocode(address) {
@@ -217,18 +314,15 @@
       const destText = document.getElementById('destination-input').value;
 
       if (!originText || !destText) {
-        alert('Por favor, preencha a origem e o destino!');
+        alert('Por favor, informe a origem e o destino!');
         return;
       }
-
-      document.getElementById('trip-info').innerText = "Metendo marcha na rota...";
 
       const originCoords = await geocode(originText);
       const destCoords = await geocode(destText);
 
       if (!originCoords || !destCoords) {
-        alert('Não foi possível encontrar um dos endereços.');
-        document.getElementById('trip-info').innerText = "Erro ao localizar endereços.";
+        alert('Endereço não localizado. Tente digitar de forma mais detalhada.');
         return;
       }
 
@@ -242,13 +336,10 @@
           L.latLng(destCoords[0], destCoords[1])
         ],
         lineOptions: {
-          styles: [{ color: '#d32f2f', weight: 6 }]
+          styles: [{ color: '#000000', weight: 5 }]
         },
         createMarker: function(i, waypoint, n) {
-          // Coloca o carrinho vermelho na origem
-          if (i === 0) {
-            return L.marker(waypoint.latLng, { icon: redCarIcon });
-          }
+          if (i === 0) return L.marker(waypoint.latLng, { icon: redCarIcon });
           return L.marker(waypoint.latLng);
         }
       }).addTo(map);
@@ -258,26 +349,33 @@
         const summary = routes[0].summary;
         
         distanceKm = summary.totalDistance / 1000;
-        const timeMinutes = Math.round(summary.totalTime / 60);
+        const baseTime = Math.round(summary.totalTime / 60);
 
-        document.getElementById('trip-info').innerText = `Distância: ${distanceKm.toFixed(1)} km • Tempo est.: ${timeMinutes} min`;
+        // Atualiza tempos
+        document.getElementById('time-X').innerText = `${baseTime} min`;
+        document.getElementById('time-Moto').innerText = `${Math.max(1, baseTime - 3)} min`;
+        document.getElementById('time-Comfort').innerText = `${Math.max(1, baseTime - 2)} min`;
+        document.getElementById('time-Black').innerText = `${baseTime} min`;
 
-        updatePrices();
+        // Cálculo de preços estilo Uber
+        const pX = 5.00 + (distanceKm * 2.30);
+        const pMoto = 3.00 + (distanceKm * 1.30);
+        const pComfort = 7.00 + (distanceKm * 2.90);
+        const pBlack = 10.00 + (distanceKm * 3.80);
+
+        document.getElementById('price-X').innerText = `R$ ${pX.toFixed(2)}`;
+        document.getElementById('price-Moto').innerText = `R$ ${pMoto.toFixed(2)}`;
+        document.getElementById('price-Comfort').innerText = `R$ ${pComfort.toFixed(2)}`;
+        document.getElementById('price-Black').innerText = `R$ ${pBlack.toFixed(2)}`;
       });
     }
 
-    function updatePrices() {
-      if (distanceKm === 0) return;
-
-      const baseFare = 5.00;
-
-      const priceX = baseFare + (distanceKm * 2.20);
-      const priceComfort = baseFare + (distanceKm * 2.80);
-      const priceBlack = baseFare + (distanceKm * 3.60);
-
-      document.getElementById('price-X').innerText = `R$ ${priceX.toFixed(2)}`;
-      document.getElementById('price-Comfort').innerText = `R$ ${priceComfort.toFixed(2)}`;
-      document.getElementById('price-Black').innerText = `R$ ${priceBlack.toFixed(2)}`;
+    function confirmTrip() {
+      if (distanceKm === 0) {
+        alert('Calcule uma rota primeiro!');
+        return;
+      }
+      alert('🚀 Viagem solicitada com sucesso! Procurando motorista próximo...');
     }
   </script>
 
