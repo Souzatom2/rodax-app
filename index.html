@@ -184,7 +184,6 @@
       color: #d32f2f;
     }
 
-    /* Barra de Seleção de Pagamento Interativa */
     .payment-bar {
       display: flex;
       align-items: center;
@@ -224,7 +223,7 @@
       background-color: #b71c1c;
     }
 
-    /* Tela de Procurando Motorista */
+    /* Tela 1: Procurando Motorista */
     .searching-screen {
       display: none;
       text-align: center;
@@ -246,6 +245,81 @@
       100% { transform: rotate(360deg); }
     }
 
+    /* Tela 2: Motorista Encontrado */
+    .driver-screen {
+      display: none;
+      padding: 10px 0;
+    }
+
+    .driver-status {
+      font-size: 18px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 5px;
+    }
+
+    .driver-time {
+      font-size: 14px;
+      color: #d32f2f;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .driver-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      margin-bottom: 15px;
+    }
+
+    .driver-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .driver-details h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .driver-details p {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .car-info {
+      text-align: right;
+    }
+
+    .car-info h5 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .car-info .plate {
+      display: inline-block;
+      background: #eee;
+      border: 1px solid #ccc;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
     .btn-cancel {
       width: 100%;
       padding: 12px;
@@ -254,7 +328,7 @@
       border: none;
       border-radius: 10px;
       font-weight: 700;
-      margin-top: 15px;
+      margin-top: 10px;
       cursor: pointer;
     }
 
@@ -344,8 +418,29 @@
     <div class="searching-screen" id="searching-section">
       <h3 style="color: #d32f2f;" id="searching-title">Procurando seu motorista...</h3>
       <div class="radar-spinner"></div>
-      <p style="color: #666; font-size: 14px;">Estamos contactando os motoristas mais próximos de você.</p>
+      <p style="color: #666; font-size: 14px;">Conectando com motoristas próximos...</p>
       <button class="btn-cancel" onclick="cancelSearch()">Cancelar Solicitação</button>
+    </div>
+
+    <div class="driver-screen" id="driver-section">
+      <div class="driver-status">Motorista a caminho!</div>
+      <div class="driver-time" id="driver-eta">Chega em 3 min</div>
+
+      <div class="driver-card">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="driver-avatar">👨‍✈️</div>
+          <div class="driver-details">
+            <h4 id="driver-name">Carlos Eduardo</h4>
+            <p>⭐ 4.9 (1.420 viagens)</p>
+          </div>
+        </div>
+        <div class="car-info">
+          <h5 id="driver-car">Hyundai HB20</h5>
+          <span class="plate" id="driver-plate">ABC-1234</span>
+        </div>
+      </div>
+
+      <button class="btn-cancel" onclick="cancelSearch()">Cancelar Viagem</button>
     </div>
 
   </div>
@@ -388,8 +483,8 @@
     let routingControl = null;
     let distanceKm = 0;
     let selectedCategory = "Marcha X";
+    let searchTimeout = null;
 
-    // Opções de Pagamento Alternáveis
     const paymentMethods = ["💳 Cartão de Crédito", "💵 Dinheiro", "⚡ PIX", "🍎 Apple Pay"];
     let currentPaymentIndex = 0;
 
@@ -477,33 +572,4 @@
 
         const pX = 8.00 + (distanceKm * 2.80) + (baseTime * 0.40);
         const pMoto = 5.00 + (distanceKm * 1.20) + (baseTime * 0.20);
-        const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime * 0.50);
-        const pBlack = 15.00 + (distanceKm * 4.80) + (baseTime * 0.60);
-
-        document.getElementById('price-X').innerText = `R$ ${pX.toFixed(2)}`;
-        document.getElementById('price-Moto').innerText = `R$ ${pMoto.toFixed(2)}`;
-        document.getElementById('price-Comfort').innerText = `R$ ${pComfort.toFixed(2)}`;
-        document.getElementById('price-Black').innerText = `R$ ${pBlack.toFixed(2)}`;
-      });
-    }
-
-    function confirmTrip() {
-      if (distanceKm === 0) {
-        alert('Calcule uma rota primeiro!');
-        return;
-      }
-
-      // Oculta formulário e exibe animação de busca na tela
-      document.getElementById('booking-section').style.display = 'none';
-      document.getElementById('searching-section').style.display = 'block';
-      document.getElementById('searching-title').innerText = `Procurando ${selectedCategory}...`;
-    }
-
-    function cancelSearch() {
-      document.getElementById('searching-section').style.display = 'none';
-      document.getElementById('booking-section').style.display = 'block';
-    }
-  </script>
-
-</body>
-</html>
+        const pComfort = 12.00 + (distanceKm * 3.60) + (baseTime *
