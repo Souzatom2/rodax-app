@@ -358,7 +358,6 @@
       font-size: 28px;
       line-height: 1;
       text-align: center;
-      /* Ajuste para alinhar a frente do emoji corretamente com a rota */
       display: inline-block;
       transform: rotate(90deg);
       transition: transform 0.2s linear;
@@ -499,7 +498,7 @@
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   
   <script>
-    // Centralizado na Zona Leste de São Paulo (Itaquera / Aricanduva)
+    // Inicialização correta focada na Zona Leste de São Paulo (Itaquera)
     const map = L.map('map', { zoomControl: false }).setView([-23.5431, -46.4673], 13);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -507,7 +506,10 @@
       attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    setTimeout(() => { map.invalidateSize(); }, 300);
+    // Garante renderização perfeita do mapa ao carregar a página
+    window.addEventListener('load', () => {
+      map.invalidateSize();
+    });
 
     const carEmojiIcon = L.divIcon({
       html: '<div class="vehicle-emoji">🚗</div>',
@@ -527,7 +529,6 @@
     let activeDriverMarker = null;
     let animationInterval = null;
 
-    // Coordenadas padrão na Zona Leste (Itaquera)
     let userOriginCoords = [-23.5431, -46.4673]; 
     let userStopCoords = null;
     let userDestCoords = [-23.5739, -46.5195];  
@@ -543,75 +544,4 @@
       const addStopBtn = document.getElementById('add-stop-trigger');
       const stopInput = document.getElementById('stop-input');
 
-      if (stopContainer.classList.contains('active')) {
-        stopContainer.classList.remove('active');
-        addStopBtn.style.display = 'block';
-        stopInput.value = '';
-        userStopCoords = null;
-      } else {
-        stopContainer.classList.add('active');
-        addStopBtn.style.display = 'none';
-      }
-    }
-
-    function changePaymentMethod() {
-      currentPaymentIndex = (currentPaymentIndex + 1) % paymentMethods.length;
-      document.getElementById('payment-text').innerText = paymentMethods[currentPaymentIndex];
-    }
-
-    function selectOption(element, categoryName) {
-      document.querySelectorAll('.ride-item').forEach(item => item.classList.remove('selected'));
-      element.classList.add('selected');
-      selectedCategory = categoryName;
-      document.getElementById('btn-confirm-text').innerText = `Escolha ${selectedCategory}`;
-    }
-
-    function getArrivalTime(addMinutes) {
-      const now = new Date();
-      now.setMinutes(now.getMinutes() + addMinutes);
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}`;
-    }
-
-    function useCurrentLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          userOriginCoords = [position.coords.latitude, position.coords.longitude];
-          document.getElementById('origin-input').value = "Minha Localização (GPS)";
-          map.setView(userOriginCoords, 15);
-        }, () => {
-          alert("GPS indisponível no momento.");
-        });
-      }
-    }
-
-    async function geocode(address) {
-      if (!address) return null;
-      if (address.includes("GPS")) return userOriginCoords;
-      try {
-        const query = address.toLowerCase().includes('são paulo') ? address : `${address}, São Paulo, SP, Brasil`;
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data && data.length > 0) {
-          return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-        }
-      } catch (err) {
-        console.warn("Geocode indisponível:", err);
-      }
-      return null;
-    }
-
-    async function calculateTrip() {
-      const btnCalc = document.getElementById('btn-calc');
-      const originText = document.getElementById('origin-input').value.trim();
-      const stopText = document.getElementById('stop-input').value.trim();
-      const destText = document.getElementById('destination-input').value.trim();
-
-      if (!originText || !destText) {
-        alert('Por favor, informe a origem e o destino!');
-        return;
-      }
-
-      btnCalc.innerText = "⏳
+      if (stopContainer.classList.contains('active'))
