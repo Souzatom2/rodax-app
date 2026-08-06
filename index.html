@@ -6,7 +6,6 @@
   <title>Mete Marcha - Mobilidade</title>
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
   
   <style>
     * {
@@ -288,3 +287,163 @@
       border-radius: 12px;
       border: 1px solid #eee;
       margin: 15px 0;
+      text-align: left;
+    }
+
+    .btn-cancel {
+      width: 100%;
+      padding: 12px;
+      background: #eee;
+      color: #333;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .arrival-badge {
+      background: #2e7d32;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-block;
+      margin-top: 6px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Classe CSS para girar o carrinho suavemente */
+    .vehicle-icon {
+      transition: transform 0.2s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div class="bottom-panel">
+    <div class="drag-handle"></div>
+
+    <div id="booking-section">
+      <div class="brand-header">
+        <div class="brand-logo">METE <span>MARCHA</span></div>
+      </div>
+      
+      <div class="input-box">
+        <div class="input-row">
+          <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Rua Itaquera, São Paulo)" value="Itaquera, São Paulo">
+          <button class="gps-btn" onclick="useCurrentLocation()">📍 Meu GPS</button>
+        </div>
+        <input type="text" id="destination-input" placeholder="Para onde vamos? (ex: Shopping Aricanduva)" value="Shopping Aricanduva">
+      </div>
+
+      <button class="btn-calc" id="btn-calc" onclick="calculateTrip()">🔍 Buscar Rota e Preços</button>
+
+      <div class="ride-list">
+        
+        <div class="ride-item selected" onclick="selectOption(this, 'Marcha X')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🚗</div>
+            <div class="ride-details">
+              <h4>Marcha X 👤4</h4>
+              <p id="time-X">--:-- · -- min</p>
+              <p class="sub-desc">Viagens baratas</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-X">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Envios Moto')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🏍️</div>
+            <div class="ride-details">
+              <h4>Envios Moto</h4>
+              <p id="time-Moto">--:-- · -- min</p>
+              <p class="sub-desc">Envie itens pequenos rapidamente</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Moto">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Comfort')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🚘</div>
+            <div class="ride-details">
+              <h4>Comfort 👤4</h4>
+              <p id="time-Comfort">--:-- · -- min</p>
+              <p class="sub-desc">Carros mais novos e espaçosos</p>
+              <span class="badge">Mais rápido</span>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Comfort">R$ --</div>
+        </div>
+
+        <div class="ride-item" onclick="selectOption(this, 'Black')">
+          <div class="ride-info-left">
+            <div class="ride-icon-box">🖤</div>
+            <div class="ride-details">
+              <h4>Black 👤4</h4>
+              <p id="time-Black">--:-- · -- min</p>
+              <p class="sub-desc">Carros de luxo e atendimento VIP</p>
+            </div>
+          </div>
+          <div class="ride-price" id="price-Black">R$ --</div>
+        </div>
+
+      </div>
+
+      <div class="payment-bar" onclick="changePaymentMethod()">
+        <span id="payment-text">💳 Cartão de Crédito</span>
+        <span>Mudar ❯</span>
+      </div>
+
+      <button class="btn-submit" id="btn-confirm-text" onclick="confirmTrip()">Escolha Marcha X</button>
+    </div>
+
+    <div class="searching-screen" id="searching-section">
+      <h3 style="color: #d32f2f;" id="searching-title">Procurando motorista...</h3>
+      <div class="radar-spinner"></div>
+      <p style="color: #666; font-size: 14px;">Conectando aos motoristas mais próximos...</p>
+      <button class="btn-cancel" onclick="cancelSearch()" style="margin-top: 15px;">Cancelar Solicitação</button>
+    </div>
+
+    <div class="driver-screen" id="driver-section">
+      <h3 id="driver-status-title" style="color: #111; text-align: left; font-size: 18px;">Motorista a caminho!</h3>
+      <p id="driver-eta-text" style="color: #d32f2f; text-align: left; font-weight: 700; font-size: 14px; margin-top: 2px;">Chega em 3 minutos</p>
+      
+      <div id="arrival-notice" style="display: none; text-align: left;">
+        <span class="arrival-badge">🔔 O motorista chegou ao local de embarque!</span>
+      </div>
+
+      <div class="driver-card">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="font-size: 28px;">👨‍✈️</div>
+          <div>
+            <h4 id="driver-name" style="font-size: 15px; font-weight: 700;">Carlos Eduardo</h4>
+            <p style="font-size: 12px; color: #666;">⭐ 4.9 (1.420 viagens)</p>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <h5 id="driver-car" style="font-size: 13px; font-weight: 700;">Hyundai HB20</h5>
+          <span style="background: #eee; border: 1px solid #ccc; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 12px; font-weight: 700;" id="driver-plate">ABC-1234</span>
+        </div>
+      </div>
+
+      <button class="btn-cancel" onclick="cancelSearch()">Cancelar Viagem</button>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <script>
+    // 1. Inicializa o Mapa (Centralizado padrão na Zona Leste/SP)
+    const defaultCenter =
