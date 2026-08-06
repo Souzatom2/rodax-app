@@ -32,7 +32,7 @@
       z-index: 1;
     }
     
-    /* Painel Estilo Uber */
+    /* Painel Inferior */
     .bottom-panel {
       position: absolute;
       bottom: 0;
@@ -45,7 +45,7 @@
       padding: 20px;
       border-top-left-radius: 20px;
       border-top-right-radius: 20px;
-      box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
+      box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
       max-height: 85vh;
       overflow-y: auto;
     }
@@ -60,16 +60,19 @@
 
     .panel-header {
       font-size: 20px;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 15px;
-      color: #000;
+      color: #d32f2f;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .input-box {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
     
     .input-box input {
@@ -78,13 +81,31 @@
       border: 1px solid #eee;
       border-radius: 10px;
       font-size: 14px;
-      background: #f6f6f6;
+      background: #f8f9fa;
       outline: none;
     }
 
     .input-box input:focus {
-      border-color: #000;
+      border-color: #d32f2f;
       background: #fff;
+    }
+
+    .btn-calc {
+      width: 100%;
+      padding: 12px;
+      background-color: #ffebee;
+      color: #d32f2f;
+      border: 1px solid #ffcdd2;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: all 0.2s;
+    }
+
+    .btn-calc:hover {
+      background-color: #ffcdd2;
     }
 
     /* Lista Vertical de Veículos */
@@ -100,7 +121,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 12px 16px;
-      border: 2px solid transparent;
+      border: 2px solid #eee;
       border-radius: 12px;
       background: #fff;
       cursor: pointer;
@@ -108,12 +129,12 @@
     }
 
     .ride-item:hover {
-      background: #f9f9f9;
+      background: #fff5f5;
     }
 
     .ride-item.selected {
-      border-color: #000;
-      background: #fff;
+      border-color: #d32f2f;
+      background: #fff5f5;
     }
 
     .ride-info-left {
@@ -131,7 +152,7 @@
     .ride-details h4 {
       font-size: 16px;
       font-weight: 700;
-      color: #000;
+      color: #111;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -145,7 +166,7 @@
 
     .badge {
       display: inline-block;
-      background: #276ef1;
+      background: #d32f2f;
       color: white;
       font-size: 11px;
       font-weight: 600;
@@ -156,46 +177,41 @@
 
     .ride-price {
       font-size: 17px;
-      font-weight: 700;
-      color: #000;
+      font-weight: 800;
+      color: #d32f2f;
     }
 
-    /* Rodapé de Pagamento e Ação */
+    /* Barramento de Pagamento */
     .payment-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 0;
+      padding: 12px 0;
       border-top: 1px solid #eee;
       margin-top: 10px;
       font-size: 14px;
       font-weight: 600;
+      color: #333;
     }
 
+    /* Botão Principal Vermelho */
     .btn-submit {
       width: 100%;
       padding: 16px;
-      background-color: #000000;
+      background-color: #d32f2f;
       color: white;
       border: none;
       border-radius: 12px;
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 5px;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+      transition: background 0.2s;
     }
 
-    .btn-calc {
-      width: 100%;
-      padding: 12px;
-      background-color: #e0e0e0;
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 15px;
+    .btn-submit:hover {
+      background-color: #b71c1c;
     }
 
     .leaflet-routing-container {
@@ -209,7 +225,7 @@
 
   <div class="bottom-panel">
     <div class="drag-handle"></div>
-    <div class="panel-header">Escolher uma viagem</div>
+    <div class="panel-header">🚗 Mete Marcha</div>
     
     <div class="input-box">
       <input type="text" id="origin-input" placeholder="Ponto de Partida (ex: Av. Paulista, 1000)">
@@ -256,7 +272,7 @@
 
       <div class="ride-item" onclick="selectOption(this)">
         <div class="ride-info-left">
-          <div class="ride-icon">🖤</div>
+          <div class="ride-icon">🚘</div>
           <div class="ride-details">
             <h4>Black</h4>
             <p id="time-Black">-- min est.</p>
@@ -268,7 +284,7 @@
     </div>
 
     <div class="payment-bar">
-      <span>💳 Apple Pay / Cartão</span>
+      <span>💳 Apple Pay / Cartão / PIX</span>
       <span>❯</span>
     </div>
 
@@ -336,7 +352,7 @@
           L.latLng(destCoords[0], destCoords[1])
         ],
         lineOptions: {
-          styles: [{ color: '#000000', weight: 5 }]
+          styles: [{ color: '#d32f2f', weight: 6 }]
         },
         createMarker: function(i, waypoint, n) {
           if (i === 0) return L.marker(waypoint.latLng, { icon: redCarIcon });
@@ -351,13 +367,11 @@
         distanceKm = summary.totalDistance / 1000;
         const baseTime = Math.round(summary.totalTime / 60);
 
-        // Atualiza tempos
         document.getElementById('time-X').innerText = `${baseTime} min`;
         document.getElementById('time-Moto').innerText = `${Math.max(1, baseTime - 3)} min`;
         document.getElementById('time-Comfort').innerText = `${Math.max(1, baseTime - 2)} min`;
         document.getElementById('time-Black').innerText = `${baseTime} min`;
 
-        // Cálculo de preços estilo Uber
         const pX = 5.00 + (distanceKm * 2.30);
         const pMoto = 3.00 + (distanceKm * 1.30);
         const pComfort = 7.00 + (distanceKm * 2.90);
@@ -375,7 +389,7 @@
         alert('Calcule uma rota primeiro!');
         return;
       }
-      alert('🚀 Viagem solicitada com sucesso! Procurando motorista próximo...');
+      alert('🚀 Viagem solicitada com sucesso! Procurando motorista Mete Marcha...');
     }
   </script>
 
