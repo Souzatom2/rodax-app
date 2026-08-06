@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mete Marcha - Mobilidade</title>
   
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' https:; connect-src 'self' https:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https: *.openstreetmap.org; font-src 'self' https:; connect-src 'self' https:;">
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
@@ -26,13 +26,11 @@
     }
     
     #map {
-      position: absolute;
+      position: fixed;
       top: 0;
-      bottom: 0;
       left: 0;
-      right: 0;
-      height: 100%;
-      width: 100%;
+      width: 100vw;
+      height: 100vh;
       z-index: 1;
     }
     
@@ -495,53 +493,3 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-  
-  <script>
-    // Inicialização correta focada na Zona Leste de São Paulo (Itaquera)
-    const map = L.map('map', { zoomControl: false }).setView([-23.5431, -46.4673], 13);
-
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    // Garante renderização perfeita do mapa ao carregar a página
-    window.addEventListener('load', () => {
-      map.invalidateSize();
-    });
-
-    const carEmojiIcon = L.divIcon({
-      html: '<div class="vehicle-emoji">🚗</div>',
-      className: '',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
-
-    const motoEmojiIcon = L.divIcon({
-      html: '<div class="vehicle-emoji">🏍️</div>',
-      className: '',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
-
-    let mainRoutingControl = null;
-    let activeDriverMarker = null;
-    let animationInterval = null;
-
-    let userOriginCoords = [-23.5431, -46.4673]; 
-    let userStopCoords = null;
-    let userDestCoords = [-23.5739, -46.5195];  
-    let distanceKm = 0;
-    let selectedCategory = "Marcha X";
-    let searchTimeout = null;
-
-    const paymentMethods = ["💳 Cartão de Crédito", "💵 Dinheiro", "⚡ PIX", "🍎 Apple Pay"];
-    let currentPaymentIndex = 0;
-
-    function toggleStopField() {
-      const stopContainer = document.getElementById('stop-container');
-      const addStopBtn = document.getElementById('add-stop-trigger');
-      const stopInput = document.getElementById('stop-input');
-
-      if (stopContainer.classList.contains('active'))
